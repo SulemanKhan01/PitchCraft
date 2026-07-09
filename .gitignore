@@ -1,0 +1,35 @@
+# Environment variables / secrets
+.env
+
+# Python virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# IDE and Editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Qdrant local storage directory (if running locally)
+qdrant_storage/
+
+# Local data (excluding the structure itself)
+# If you want to keep the directory structure but not the PDF files:
+# data/raw_pdfs/*.pdf
