@@ -12,6 +12,6 @@ def extract_from_pdf(pdf_path: str):
     return("\n".join(all_text).strip())
         
 
-if __name__ == "__main__":
-    text = extract_from_pdf(r"C:\Users\PC\Documents\ab_ark\PitchCraft\data\raw_pdfs\POC_Proposal.pdf")
-    print(text)
+# if __name__ == "__main__":
+#     text = extract_from_pdf(r"C:\Users\PC\Documents\ab_ark\PitchCraft\data\raw_pdfs\POC_Proposal.pdf")
+#     print(text)

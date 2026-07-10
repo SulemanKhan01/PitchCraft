@@ -123,3 +123,5 @@ if __name__ == "__main__":
     print(f"\nEmbedded {len(results)} chunks.")
     for r in results:
         print(f"  ID: {r['id']} | Section: {r['metadata']['section']} | Dim: {len(r['embedding'])}")
+
+
