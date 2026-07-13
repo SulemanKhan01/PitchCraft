@@ -30,6 +30,19 @@ Thumbs.db
 # Qdrant local storage directory (if running locally)
 qdrant_storage/
 
-# Local data (excluding the structure itself)
-# If you want to keep the directory structure but not the PDF files:
-# data/raw_pdfs/*.pdf
+# Local data files
+data/raw_pdfs/*.pdf
+data/processed/*.json
+
+# Logs
+*.log
+logs/
+
+# Build / dist
+dist/
+build/
+*.egg-info/
+
+# Test coverage
+.coverage
+htmlcov/
