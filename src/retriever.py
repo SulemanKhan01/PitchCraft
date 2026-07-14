@@ -52,8 +52,3 @@ def retrieve_chunks(query:str ):
 
     return chunks
 
-
-test = retrieve_chunks("tell me somthing about Edge-Based Computer Vision (CV) Pipeline")
-print(test)
-# # chunk = test[0]
-# # print(chunk['text'])
