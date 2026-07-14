@@ -1,7 +1,11 @@
 from fastapi import APIRouter ,HTTPException
 
+import io
+
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from src.cover_letter.pipeline import generate_cover_letter_content
+from src.cover_letter.pdf_generator import generate_minimal_pdf
 
 
 router = APIRouter(
@@ -17,6 +21,11 @@ class GenerateRequest(BaseModel):
 class GenerateResponse(BaseModel):
     generated_content : str
     num_chunks_used   : int 
+
+
+class PDFRequest(BaseModel):
+    text: str
+
 
 
 
@@ -38,3 +47,19 @@ async def generate_cover_letter(request : GenerateRequest):
     )
 
     return response
+
+
+@router.post("/cover-letter/pdf")
+async def download_pdf(request: PDFRequest):
+    if not request.text or not request.text.strip():
+        raise HTTPException(status_code=400, detail="text cannot be empty.")
+
+    try:
+        pdf_bytes = generate_minimal_pdf(request.text)
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment; filename=cover_letter.pdf"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
