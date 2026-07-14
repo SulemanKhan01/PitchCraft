@@ -105,8 +105,10 @@ if __name__ == "__main__":
 
     result = generate_cover_letter_content(sample_jd)
 
-    print("\n===== PIPELINE RESULT =====")
-    print(f"Project Title   : {result.parsed_jd.project_title}")
-    print(f"Chunks Used     : {result.num_chunks_used}")
-    print(f"\n--- GENERATED CONTENT ---\n")
+    # print("\n===== PIPELINE RESULT =====")
+    # print(f"Project Title   : {result.parsed_jd.project_title}")
+    # print(f"Chunks Used     : {result.num_chunks_used}")
+    # print(f"\n--- GENERATED CONTENT ---\n")
     print(result.generated_content)
+    print(result)
+
