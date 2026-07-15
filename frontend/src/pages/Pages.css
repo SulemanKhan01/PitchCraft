@@ -64,3 +64,456 @@
 .placeholder-card p {
   font-size: 0.875rem;
 }
+
+/* ============================================
+   Upload Page Styles
+   ============================================ */
+
+/* Drop zone — the area where users drag files */
+.upload-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 60px 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-secondary);
+}
+
+.upload-dropzone:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* When a file is dragged over the zone */
+.upload-dropzone.dragover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  transform: scale(1.01);
+}
+
+.upload-dropzone-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.upload-dropzone h3 {
+  font-size: 1.125rem;
+  margin-bottom: 8px;
+  color: var(--text-heading);
+}
+
+.upload-dropzone p {
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+.upload-dropzone .browse-link {
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Hidden file input — we trigger it programmatically */
+.upload-file-input {
+  display: none;
+}
+
+/* Selected file info */
+.upload-file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.upload-file-info-icon {
+  font-size: 1.5rem;
+}
+
+.upload-file-info-details {
+  flex: 1;
+  text-align: left;
+}
+
+.upload-file-info-name {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--text-heading);
+}
+
+.upload-file-info-size {
+  font-size: 0.8125rem;
+  color: var(--text-light);
+}
+
+.upload-file-info-remove {
+  background: none;
+  color: var(--error);
+  font-size: 1.25rem;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* Upload button */
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 12px 28px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border-radius: var(--radius);
+  transition: background 0.15s ease;
+}
+
+.upload-btn:hover {
+  background: var(--primary-hover);
+}
+
+.upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Loading spinner */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Status messages */
+.upload-status {
+  margin-top: 20px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-status.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--success);
+}
+
+.upload-status.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--error);
+}
+
+/* ============================================
+   Chat Page Styles
+   ============================================ */
+
+/* Chat container — takes full height of the page */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);  /* Full viewport minus page header */
+}
+
+/* Messages area — scrolls when content overflows */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Single message row */
+.chat-message {
+  display: flex;
+  gap: 12px;
+  max-width: 85%;
+}
+
+/* User messages align right, AI messages align left */
+.chat-message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.chat-message.assistant {
+  align-self: flex-start;
+}
+
+/* Avatar circle */
+.chat-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.chat-message.user .chat-avatar {
+  background: var(--primary);
+  color: #fff;
+}
+
+.chat-message.assistant .chat-avatar {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+
+/* Message bubble */
+.chat-bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  white-space: pre-wrap;       /* Preserve line breaks from API response */
+  word-wrap: break-word;
+}
+
+.chat-message.user .chat-bubble {
+  background: var(--primary);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-message.assistant .chat-bubble {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+
+/* Typing indicator animation */
+.chat-typing {
+  display: flex;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.chat-typing span {
+  width: 8px;
+  height: 8px;
+  background: var(--text-light);
+  border-radius: 50%;
+  animation: typingBounce 1.2s ease-in-out infinite;
+}
+
+.chat-typing span:nth-child(2) { animation-delay: 0.15s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* Input area at the bottom */
+.chat-input-area {
+  padding: 16px 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-heading);
+  resize: none;                 /* User can't resize — we auto-grow instead */
+  min-height: 48px;
+  max-height: 150px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.chat-input:focus {
+  border-color: var(--border-focus);
+}
+
+.chat-input::placeholder {
+  color: var(--text-light);
+}
+
+.chat-send-btn {
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border-radius: var(--radius);
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.chat-send-btn:hover {
+  background: var(--primary-hover);
+}
+
+.chat-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty state when no messages yet */
+.chat-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light);
+  gap: 8px;
+}
+
+.chat-empty-icon {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+
+.chat-empty h3 {
+  font-size: 1.125rem;
+  color: var(--text);
+}
+
+.chat-empty p {
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   Cover Letter Page Styles
+   ============================================ */
+
+.cl-textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 16px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  line-height: 1.6;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-heading);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.cl-textarea:focus {
+  border-color: var(--border-focus);
+}
+
+.cl-textarea::placeholder {
+  color: var(--text-light);
+}
+
+.cl-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  transition: background 0.15s ease;
+}
+
+.cl-btn-primary {
+  color: #fff;
+  background: var(--primary);
+}
+
+.cl-btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.cl-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cl-btn-secondary {
+  color: var(--text-heading);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+
+.cl-btn-secondary:hover {
+  background: var(--border);
+}
+
+.cl-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Generated output area */
+.cl-output {
+  margin-top: 28px;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.cl-output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.cl-output-header h3 {
+  font-size: 1rem;
+  color: var(--text-heading);
+}
+
+.cl-output-text {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.cl-output-stats {
+  margin-top: 14px;
+  font-size: 0.8125rem;
+  color: var(--text-light);
+}
