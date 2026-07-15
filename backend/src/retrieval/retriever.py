@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from .vector_store import _get_client
+from src.retrieval.vector_store import _get_client
 
 load_dotenv()
 from config import COLLECTION_NAME

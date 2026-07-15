@@ -82,3 +82,4 @@ uritemplate==4.2.0
 urllib3==2.7.0
 websockets==16.1
 pyspellchecker==0.8.1
+reportlab

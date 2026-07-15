@@ -4,8 +4,8 @@ import io
 
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from src.cover_letter.pipeline import generate_cover_letter_content
-from src.cover_letter.pdf_generator import generate_minimal_pdf
+from src.services.cover_letter.pipeline import generate_cover_letter_content
+from src.services.cover_letter.pdf_generator import generate_minimal_pdf
 
 
 router = APIRouter(

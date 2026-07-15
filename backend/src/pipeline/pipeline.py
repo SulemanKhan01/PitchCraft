@@ -12,11 +12,11 @@ from config import (
     BATCH_SIZE,
 )
 
-from .extractor import extract_from_pdf
-from .categorizer import categorize_proposal
-from .chunker import chunk_document
-from .embedder import embed_chunks
-from .vector_store import upsert_vectors
+from src.extraction.extractor import extract_from_pdf
+from src.services.categorizer import categorize_proposal
+from src.chunking.chunker import chunk_document
+from src.embeddings.embedder import embed_chunks
+from src.retrieval.vector_store import upsert_vectors
 
 logger = logging.getLogger("pipeline")
 if not logger.handlers:

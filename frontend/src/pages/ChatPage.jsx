@@ -17,7 +17,7 @@
    ============================================ */
 
 import { useState, useRef, useEffect } from 'react'
-import { sendChatMessage } from '../api'
+import { sendChatMessage } from '../services/api'
 import './Pages.css'
 
 function ChatPage() {

@@ -5,10 +5,10 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
-from src.retriever import retrieve_chunks
+from src.retrieval.retriever import retrieve_chunks
 
 # ── Query Betterment — pre-embedding enrichment pipeline ─────────────────────
-from src.query_betterment import QueryBettermentPipeline, ConversationTurn
+from src.services.query_betterment import QueryBettermentPipeline, ConversationTurn
 
 load_dotenv()
 

@@ -14,7 +14,7 @@ sys.path.insert(0, PROJECT_ROOT)
 sys.path.insert(0, SRC_DIR)
 
 from config import PDF_DIR, COLLECTION_NAME
-from pipeline import process_pdf
+from src.pipeline.pipeline import process_pdf
 
 
 def main():

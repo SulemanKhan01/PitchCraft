@@ -1,5 +1,5 @@
 import logging
-from src.query_betterment.utils import (
+from src.services.query_betterment.utils import (
     get_gemini_client, 
     timer,
     parse_json_from_llm, 

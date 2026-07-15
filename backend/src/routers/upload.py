@@ -1,7 +1,7 @@
 from sys import prefix
 from fastapi import APIRouter , UploadFile , File, HTTPException
 import os
-from src.pipeline import process_pdf
+from src.pipeline.pipeline import process_pdf
 from config import COLLECTION_NAME
 import shutil
 
@@ -11,7 +11,7 @@ router = APIRouter(
     tags = ["Proposal"]
 )
 
-upload_dir = "/data/raw_pdfs"
+upload_dir = "data/raw_pdfs"
 os.makedirs(upload_dir , exist_ok = True)
 
 @router.post("/upload")
