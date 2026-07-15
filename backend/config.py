@@ -1,7 +1,9 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# Always load .env from the backend/ directory, regardless of CWD
+load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 
 # --- Qdrant Settings ---
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")

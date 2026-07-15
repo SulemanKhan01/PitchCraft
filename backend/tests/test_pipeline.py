@@ -1,7 +1,7 @@
 
 if __name__ == "__main__":
-    from extractor import extract_from_pdf
-    from categorizer import categorize_proposal
+    from src.extraction.extractor import extract_from_pdf
+    from src.services.categorizer import categorize_proposal
     
     pdf_file_path = "data/raw_pdfs/POC_Proposal.pdf"
     

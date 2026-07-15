@@ -1,5 +1,5 @@
 
-from src.retriever import retrieve_chunks
+from src.retrieval.retriever import retrieve_chunks
 import logging
 from .models import JDParsedResult
 

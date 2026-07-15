@@ -1,7 +1,7 @@
 
 
 import logging
-from src.query_betterment.utils import get_gemini_client, GEMINI_FLASH_LITE
+from src.services.query_betterment.utils import get_gemini_client, GEMINI_FLASH_LITE
 from .models import JDParsedResult
 
 logger = logging.getLogger("cover_letter.content_generator")

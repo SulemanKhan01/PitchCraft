@@ -21,7 +21,7 @@
    ============================================ */
 
 import { useState, useRef } from 'react'
-import { uploadProposal } from '../api'
+import { uploadProposal } from '../services/api'
 import './Pages.css'
 
 function UploadPage() {

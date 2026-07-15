@@ -18,7 +18,7 @@
    ============================================ */
 
 import { useState } from 'react'
-import { generateCoverLetter, downloadCoverLetterPDF } from '../api'
+import { generateCoverLetter, downloadCoverLetterPDF } from '../services/api'
 import './Pages.css'
 
 function CoverLetterPage() {

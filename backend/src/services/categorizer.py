@@ -69,7 +69,7 @@ def categorize_proposal(pdf_name: str , text: str):
 
 
 if __name__ == "__main__":
-    from extractor import extract_from_pdf
+    from src.extraction.extractor import extract_from_pdf
     
     pdf_file_path = "data/raw_pdfs/POC_Proposal.pdf"
     

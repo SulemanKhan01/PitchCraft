@@ -40,12 +40,24 @@ PitchCraft/
 │   └── processed/
 │       └── tagged_proposals.json         # LLM-assigned categories (auto-generated)
 │
-├── src/
+├── frontend/                             # React + Vite frontend application
+│   ├── src/
+│   │   ├── components/                   # Shared components (Layout, Sidebar)
+│   │   ├── pages/                        # App views (ChatPage, UploadPage, CoverLetterPage)
+│   │   ├── App.jsx                       # Router setup & layout wrapper
+│   │   ├── api.js                        # Client API endpoints calling FastAPI
+│   │   ├── index.css                     # Design token styles & CSS resets
+│   │   └── main.jsx                      # App entry point
+│   ├── package.json                      # Frontend dependencies & npm scripts
+│   └── vite.config.js                    # Vite configuration
+│
+├── src/                                  # Backend FastAPI source code
 │   │
 │   ├── routers/                          # FastAPI route handlers
 │   │   ├── __init__.py
 │   │   ├── upload.py                     # POST /api/upload  — ingest a new PDF
-│   │   └── chat.py                       # POST /api/chat/chat — ask a question
+│   │   ├── chat.py                       # POST /api/chat/chat — ask a question
+│   │   └── generate_coverletter.py       # POST /api/coverletter — generate custom cover letter
 │   │
 │   ├── query_betterment/                 # Query Betterment Pipeline (pre-embedding)
 │   │   ├── __init__.py                   # Public API: QueryBettermentPipeline
@@ -69,7 +81,7 @@ PitchCraft/
 │   ├── embedder.py                       # Chunk → vector  (Gemini Embedding)
 │   ├── vector_store.py                   # Qdrant client + upsert logic
 │   ├── pipeline.py                       # Ingestion pipeline: PDF → Qdrant
-│   └── test.py                           # Quick manual test script
+│   └── retriever.py                      # Retrieval functions matching queries to vector database
 │
 ├── config.py                             # Central settings (chunk size, model, Qdrant URL)
 ├── main.py                               # FastAPI app entry point
@@ -88,8 +100,8 @@ PitchCraft/
 ### 1. Clone & set up environment
 
 ```bash
-python -m venv venv
-venv\Scripts\activate          # Windows
+python -m venv backend\venv
+backend\venv\Scripts\activate  # Windows
 pip install -r requirement.txt
 ```
 
