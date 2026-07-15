@@ -1,111 +1,116 @@
+/* ============================================
+   PitchCraft — Global Styles & Design Tokens
+   ============================================ */
+
+/* CSS CUSTOM PROPERTIES (Variables)
+   These are reusable values. Any CSS file can use them with var(--name).
+   We define them on :root (the <html> element) so they're global. */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Colors */
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-light: rgba(124, 58, 237, 0.1);
+  --bg: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-sidebar: #1e1b2e;
+  --text: #374151;
+  --text-light: #9ca3af;
+  --text-heading: #111827;
+  --text-sidebar: #d1d5db;
+  --text-sidebar-active: #ffffff;
+  --border: #e5e7eb;
+  --border-focus: #7c3aed;
+  --success: #10b981;
+  --error: #ef4444;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Spacing */
+  --radius: 8px;
+  --radius-lg: 12px;
+}
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
+/* DARK MODE — Override variables when user prefers dark theme
+   The browser tells us via prefers-color-scheme media query */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #a78bfa;
+    --primary-hover: #8b5cf6;
+    --primary-light: rgba(167, 139, 250, 0.15);
+    --bg: #0f0d15;
+    --bg-secondary: #1a1726;
+    --bg-sidebar: #0a0812;
+    --text: #9ca3af;
+    --text-light: #6b7280;
+    --text-heading: #f3f4f6;
+    --border: #2d2a3a;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* CSS RESET — Remove browser defaults for consistent rendering */
+*, *::before, *::after {
+  box-sizing: border-box;     /* width includes padding + border */
+  margin: 0;
+  padding: 0;
+}
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+/* BASE STYLES */
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+  min-height: 100vh;
 }
 
+/* #root is the single DOM node React manages */
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;              /* Flexbox: children lay out in a row (sidebar + content) */
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+/* Headings */
+h1, h2, h3 {
+  color: var(--text-heading);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+/* Links */
+a {
+  color: var(--primary);
+  text-decoration: none;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+a:hover {
+  text-decoration: underline;
 }
 
+/* Buttons base */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+}
+
+/* Code */
 code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  background: var(--bg-secondary);
+  padding: 2px 6px;
+  border-radius: 4px;
 }

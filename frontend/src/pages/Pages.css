@@ -1,0 +1,66 @@
+/* ============================================
+   Shared Page Styles
+   ============================================
+
+   CONCEPT: BEM-like naming convention
+
+   We use descriptive class names: .page, .page-header, .page-title.
+   This avoids CSS conflicts — no two components will accidentally
+   share the same class name.
+
+   The .main-content class styles the content area next to the sidebar.
+   ============================================ */
+
+/* Main content area — to the right of sidebar */
+.main-content {
+  margin-left: 240px;            /* Same width as sidebar */
+  flex: 1;                        /* Fill remaining horizontal space */
+  min-height: 100vh;
+  padding: 32px 40px;
+  background: var(--bg);
+}
+
+/* Page wrapper — every page starts with this structure */
+.page {
+  max-width: 900px;
+}
+
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 0.9375rem;
+  color: var(--text-light);
+}
+
+/* Placeholder card for pages under construction */
+.placeholder-card {
+  background: var(--bg-secondary);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 60px 40px;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.placeholder-card-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.placeholder-card h3 {
+  font-size: 1.125rem;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.placeholder-card p {
+  font-size: 0.875rem;
+}
