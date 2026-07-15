@@ -46,3 +46,9 @@ build/
 # Test coverage
 .coverage
 htmlcov/
+
+
+# Impeccable / AI harness skills
+.gemini/
+.impeccable/
+
