@@ -20,17 +20,20 @@
    - onChange: When a file is selected via the hidden input
    ============================================ */
 
-import { useState, useRef } from 'react'
+import { useRef } from 'react'
 import { uploadProposal } from '../services/api'
+import useUploadStore from '../stores/useUploadStore'
 import './Pages.css'
 
 function UploadPage() {
-  /* STATE — React's way of remembering values across re-renders.
-     When you call setX(), React re-renders the component with the new value. */
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [status, setStatus] = useState(null)  // { type: "success"|"error", message: "..." }
-  const [isDragOver, setIsDragOver] = useState(false)
+  const selectedFile = useUploadStore((s) => s.selectedFile)
+  const isUploading = useUploadStore((s) => s.isUploading)
+  const status = useUploadStore((s) => s.status)
+  const isDragOver = useUploadStore((s) => s.isDragOver)
+  const setSelectedFile = useUploadStore((s) => s.setSelectedFile)
+  const setIsUploading = useUploadStore((s) => s.setIsUploading)
+  const setStatus = useUploadStore((s) => s.setStatus)
+  const setIsDragOver = useUploadStore((s) => s.setIsDragOver)
 
   /* REF — A reference to a DOM element.
      useRef gives us access to the actual <input> element in the DOM.

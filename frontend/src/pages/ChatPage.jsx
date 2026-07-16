@@ -24,24 +24,18 @@
    - Incremental state updates (appending to a string, not replacing)
    ============================================ */
 
-import { useState, useRef, useEffect } from 'react'
-import { createChatStream } from '../services/api'
+import { useRef, useEffect } from 'react'
+import { sendChatMessage } from '../services/api'
+import useChatStore from '../stores/useChatStore'
 import './Pages.css'
 
 function ChatPage() {
-  /* STATE: Array of messages (same as before) */
-  const [messages, setMessages] = useState([])
-
-  /* STATE: The text currently being streamed (the "typing" message)
-     This is DIFFENT from messages — it's the incomplete response
-     that's still being received token by token. */
-  const [streamingText, setStreamingText] = useState('')
-
-  /* STATE: Input field */
-  const [input, setInput] = useState('')
-
-  /* STATE: Loading indicator */
-  const [isLoading, setIsLoading] = useState(false)
+  const messages = useChatStore((s) => s.messages)
+  const input = useChatStore((s) => s.input)
+  const isLoading = useChatStore((s) => s.isLoading)
+  const setInput = useChatStore((s) => s.setInput)
+  const setIsLoading = useChatStore((s) => s.setIsLoading)
+  const addMessage = useChatStore((s) => s.addMessage)
 
   /* REF: Auto-scroll anchor */
   const messagesEndRef = useRef(null)
@@ -131,29 +125,42 @@ function ChatPage() {
     }
   }
 
-  /* Send message via WebSocket */
-  function handleSend() {
+  /* API CALL: Send message to backend and get AI response */
+  async function handleSend() {
+    const { messages: currentMessages, isLoading: isBusy } = useChatStore.getState()
     const question = input.trim()
-    if (!question || isLoading) return
+    if (!question || isBusy) return
 
     // Add user message to the list
-    setMessages(prev => [...prev, { role: 'user', content: question }])
-    setInput('')
-    setIsLoading(true)
-    setStreamingText('')  // Clear any previous streaming text
+    const userMessage = { role: 'user', content: question }
+    addMessage(userMessage)
 
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
     }
 
-    // Build history for conversation context
-    const history = [...messages, { role: 'user', content: question }].map(msg => ({
-      role: msg.role,
-      content: msg.content
-    }))
+    try {
+      // Build conversation history for context
+      const history = [...currentMessages, userMessage].map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }))
 
-    // Send via WebSocket (not fetch!)
-    wsRef.current?.send(question, history)
+      const result = await sendChatMessage(question, history)
+
+      // Add AI response to the list
+      const assistantMessage = { role: 'assistant', content: result.answer }
+      addMessage(assistantMessage)
+    } catch (error) {
+      // Add error as an assistant message
+      const errorMessage = {
+        role: 'assistant',
+        content: `Sorry, something went wrong: ${error.message}`
+      }
+      addMessage(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
