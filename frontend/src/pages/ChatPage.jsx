@@ -16,20 +16,18 @@
    - Immutable state updates (spread operator)
    ============================================ */
 
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { sendChatMessage } from '../services/api'
+import useChatStore from '../stores/useChatStore'
 import './Pages.css'
 
 function ChatPage() {
-  /* STATE: Array of messages. Each message is:
-     { role: "user"|"assistant", content: "..." } */
-  const [messages, setMessages] = useState([])
-
-  /* STATE: Current input text */
-  const [input, setInput] = useState('')
-
-  /* STATE: Whether the AI is generating a response */
-  const [isLoading, setIsLoading] = useState(false)
+  const messages = useChatStore((s) => s.messages)
+  const input = useChatStore((s) => s.input)
+  const isLoading = useChatStore((s) => s.isLoading)
+  const setInput = useChatStore((s) => s.setInput)
+  const setIsLoading = useChatStore((s) => s.setIsLoading)
+  const addMessage = useChatStore((s) => s.addMessage)
 
   /* REF: Reference to the messages container for auto-scroll */
   const messagesEndRef = useRef(null)
@@ -64,14 +62,13 @@ function ChatPage() {
 
   /* API CALL: Send message to backend and get AI response */
   async function handleSend() {
+    const { messages: currentMessages, isLoading: isBusy } = useChatStore.getState()
     const question = input.trim()
-    if (!question || isLoading) return
+    if (!question || isBusy) return
 
     // Add user message to the list
-    // IMMUABILITY: We never modify the existing array — we create a new one
-    // This is critical! React compares old vs new array to detect changes.
     const userMessage = { role: 'user', content: question }
-    setMessages(prev => [...prev, userMessage])
+    addMessage(userMessage)
 
     setInput('')           // Clear the input
     setIsLoading(true)     // Show typing indicator
@@ -83,8 +80,7 @@ function ChatPage() {
 
     try {
       // Build conversation history for context
-      // The API needs previous messages to maintain conversation context
-      const history = [...messages, userMessage].map(msg => ({
+      const history = [...currentMessages, userMessage].map(msg => ({
         role: msg.role,
         content: msg.content
       }))
@@ -93,14 +89,14 @@ function ChatPage() {
 
       // Add AI response to the list
       const assistantMessage = { role: 'assistant', content: result.answer }
-      setMessages(prev => [...prev, assistantMessage])
+      addMessage(assistantMessage)
     } catch (error) {
       // Add error as an assistant message
       const errorMessage = {
         role: 'assistant',
         content: `Sorry, something went wrong: ${error.message}`
       }
-      setMessages(prev => [...prev, errorMessage])
+      addMessage(errorMessage)
     } finally {
       setIsLoading(false)
     }
