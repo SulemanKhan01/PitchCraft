@@ -37,6 +37,9 @@ function ChatPage() {
      that's still being received token by token. */
   const [streamingText, setStreamingText] = useState('')
 
+  /* REF: Buffer for streaming text to avoid double-update bugs */
+  const streamingTextRef = useRef('')
+
   /* STATE: Input field */
   const [input, setInput] = useState('')
 
@@ -71,19 +74,22 @@ function ChatPage() {
       /* onToken: Called for each token the server sends.
          We APPEND to streamingText — this is how the text "types itself". */
       onToken: (token) => {
-        if (!cancelled) setStreamingText(prev => prev + token)
+        if (!cancelled) {
+          streamingTextRef.current += token
+          setStreamingText(streamingTextRef.current)
+        }
       },
 
       /* onDone: Server finished sending the full response.
          Move the streaming text into the messages array as a complete message. */
       onDone: () => {
         if (!cancelled) {
-          setStreamingText(prevText => {
-            if (prevText) {
-              setMessages(p => [...p, { role: 'assistant', content: prevText }])
-            }
-            return ''
-          })
+          const finalText = streamingTextRef.current
+          if (finalText) {
+            setMessages(p => [...p, { role: 'assistant', content: finalText }])
+          }
+          streamingTextRef.current = ''
+          setStreamingText('')
           setIsLoading(false)
         }
       },
@@ -91,13 +97,12 @@ function ChatPage() {
       /* onError: Something went wrong */
       onError: (errorMsg) => {
         if (!cancelled) {
-          setStreamingText(() => {
-            setMessages(p => [...p, {
-              role: 'assistant',
-              content: `Error: ${errorMsg}`
-            }])
-            return ''
-          })
+          setMessages(p => [...p, {
+            role: 'assistant',
+            content: `Error: ${errorMsg}`
+          }])
+          streamingTextRef.current = ''
+          setStreamingText('')
           setIsLoading(false)
         }
       }
@@ -141,13 +146,14 @@ function ChatPage() {
     setInput('')
     setIsLoading(true)
     setStreamingText('')  // Clear any previous streaming text
+    streamingTextRef.current = '' // Reset ref buffer too
 
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
     }
 
-    // Build history for conversation context
-    const history = [...messages, { role: 'user', content: question }].map(msg => ({
+    // Build history for conversation context (do not include the current query in history)
+    const history = messages.map(msg => ({
       role: msg.role,
       content: msg.content
     }))

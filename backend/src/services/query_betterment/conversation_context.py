@@ -99,19 +99,27 @@ JSON Response:"""
             logger.debug("No history provided — skipping context resolution.")
             return query, 1.0
 
-        # Build a readable history block from the most recent turns
-        recent = history[-_MAX_HISTORY_TURNS:]
-        history_text = "\n".join(
-            f"{turn.role.upper()}: {turn.content}" for turn in recent
-        )
-
-        prompt = self._PROMPT_TEMPLATE.format(
-            n=len(recent),
-            history=history_text,
-            query=query,
-        )
-
         try:
+            # Build a readable history block from the most recent turns
+            recent = history[-_MAX_HISTORY_TURNS:]
+            history_text_turns = []
+            for turn in recent:
+                if isinstance(turn, dict):
+                    role = turn.get("role", "")
+                    content = turn.get("content", "")
+                else:
+                    role = getattr(turn, "role", "")
+                    content = getattr(turn, "content", "")
+                history_text_turns.append(f"{str(role).upper()}: {content}")
+
+            history_text = "\n".join(history_text_turns)
+
+            prompt = self._PROMPT_TEMPLATE.format(
+                n=len(recent),
+                history=history_text,
+                query=query,
+            )
+
             client = get_gemini_client()
             with timer() as t:
                 response = client.models.generate_content(
