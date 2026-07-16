@@ -1,19 +1,27 @@
 /* ============================================
-   Chat Page — Real API Integration
+   Chat Page — WebSocket Streaming
    ============================================
 
-   CONCEPT: Dynamic Rendering + Array.map()
+   CONCEPT: Real-Time Streaming with WebSocket
 
-   This page demonstrates the core chat UI pattern:
-   1. Messages stored as an array in state
-   2. Array.map() renders each message as a chat bubble
-   3. New messages are appended to the array → React re-renders
+   BEFORE (fetch): User asks → waits 5-10s → entire answer appears at once
+   AFTER (WebSocket): User asks → answer types itself word by word
 
-   ADDITIONAL CONCEPTS:
-   - useRef for auto-scrolling to latest message
-   - onKeyDown for keyboard shortcuts (Enter to send)
-   - Controlled input (value tied to state)
-   - Immutable state updates (spread operator)
+   HOW IT WORKS:
+   1. Component mounts → opens WebSocket connection (stays open)
+   2. User sends message → WebSocket sends it to server
+   3. Server streams tokens back → each token triggers onToken callback
+   4. onToken appends text to the current message → React re-renders
+   5. Server sends "done" → onDone stops the loading state
+
+   KEY DIFFERENCE FROM FETCH:
+   - fetch() is request-response (one shot)
+   - WebSocket is a persistent pipe (continuous flow)
+
+   NEW CONCEPTS:
+   - useRef to hold the WebSocket controller across renders
+   - useEffect to open/close connection on mount/unmount
+   - Incremental state updates (appending to a string, not replacing)
    ============================================ */
 
 import { useRef, useEffect } from 'react'
@@ -29,33 +37,90 @@ function ChatPage() {
   const setIsLoading = useChatStore((s) => s.setIsLoading)
   const addMessage = useChatStore((s) => s.addMessage)
 
-  /* REF: Reference to the messages container for auto-scroll */
+  /* REF: Auto-scroll anchor */
   const messagesEndRef = useRef(null)
 
-  /* REF: Reference to the textarea for auto-resize */
+  /* REF: Textarea for auto-resize */
   const textareaRef = useRef(null)
 
-  /* EFFECT: Auto-scroll to bottom when messages change.
-     useEffect runs AFTER the component renders.
-     This ensures we scroll after new messages appear in the DOM. */
+  /* REF: Holds the WebSocket controller
+     useRef (not useState) because we don't want re-renders when this changes.
+     We just need a stable reference to call .send() and .close() on. */
+  const wsRef = useRef(null)
+
+  /* ============================================
+     EFFECT: Open WebSocket on mount, close on unmount
+
+     useEffect with empty dependency array [] runs ONCE when component mounts.
+     The cleanup function (return) runs when component unmounts.
+
+     This ensures:
+     - Connection opens when user visits Chat page
+     - Connection closes when user navigates away (frees resources)
+     ============================================ */
+  useEffect(() => {
+    let cancelled = false
+
+    wsRef.current = createChatStream({
+      /* onToken: Called for each token the server sends.
+         We APPEND to streamingText — this is how the text "types itself". */
+      onToken: (token) => {
+        if (!cancelled) setStreamingText(prev => prev + token)
+      },
+
+      /* onDone: Server finished sending the full response.
+         Move the streaming text into the messages array as a complete message. */
+      onDone: () => {
+        if (!cancelled) {
+          setStreamingText(prevText => {
+            if (prevText) {
+              setMessages(p => [...p, { role: 'assistant', content: prevText }])
+            }
+            return ''
+          })
+          setIsLoading(false)
+        }
+      },
+
+      /* onError: Something went wrong */
+      onError: (errorMsg) => {
+        if (!cancelled) {
+          setStreamingText(() => {
+            setMessages(p => [...p, {
+              role: 'assistant',
+              content: `Error: ${errorMsg}`
+            }])
+            return ''
+          })
+          setIsLoading(false)
+        }
+      }
+    })
+
+    // Cleanup: close WebSocket when component unmounts
+    return () => {
+      cancelled = true
+      wsRef.current?.close()
+    }
+  }, [])  // [] = run only on mount
+
+  /* Auto-scroll when messages or streaming text changes */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])  // Re-run whenever messages array changes
+  }, [messages, streamingText])
 
-  /* HELPER: Auto-resize textarea as user types */
+  /* Auto-resize textarea */
   function handleInputChange(event) {
     setInput(event.target.value)
-
-    // Auto-grow textarea (reset height, then set to scrollHeight)
     const textarea = event.target
     textarea.style.height = 'auto'
     textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'
   }
 
-  /* EVENT HANDLER: Send message on Enter (Shift+Enter for newline) */
+  /* Enter to send */
   function handleKeyDown(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()  // Prevent newline
+      event.preventDefault()
       handleSend()
     }
   }
@@ -70,10 +135,6 @@ function ChatPage() {
     const userMessage = { role: 'user', content: question }
     addMessage(userMessage)
 
-    setInput('')           // Clear the input
-    setIsLoading(true)     // Show typing indicator
-
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
     }
@@ -112,10 +173,9 @@ function ChatPage() {
       </div>
 
       <div className="chat-container">
-        {/* MESSAGES AREA — scrollable list of chat bubbles */}
         <div className="chat-messages">
-          {/* EMPTY STATE — shown when no messages yet */}
-          {messages.length === 0 && (
+          {/* Empty state */}
+          {messages.length === 0 && !streamingText && (
             <div className="chat-empty">
               <div className="chat-empty-icon">💬</div>
               <h3>Ask anything about your proposals</h3>
@@ -123,9 +183,7 @@ function ChatPage() {
             </div>
           )}
 
-          {/* RENDER LOOP: Array.map() converts each message object into JSX.
-              React requires a unique "key" prop for each item in a list —
-              it uses keys to efficiently update only changed items. */}
+          {/* Render completed messages */}
           {messages.map((msg, index) => (
             <div key={index} className={`chat-message ${msg.role}`}>
               <div className="chat-avatar">
@@ -137,8 +195,23 @@ function ChatPage() {
             </div>
           ))}
 
-          {/* TYPING INDICATOR — shown while AI is generating */}
-          {isLoading && (
+          {/* STREAMING MESSAGE — text appears token by token
+              This is the key difference from the fetch version!
+              Instead of a loading spinner, the user sees the actual text
+              being "typed" in real-time. */}
+          {streamingText && (
+            <div className="chat-message assistant">
+              <div className="chat-avatar">🤖</div>
+              <div className="chat-bubble">
+                {streamingText}
+                {/* Blinking cursor while streaming */}
+                <span className="streaming-cursor">|</span>
+              </div>
+            </div>
+          )}
+
+          {/* Loading dots — only show before first token arrives */}
+          {isLoading && !streamingText && (
             <div className="chat-message assistant">
               <div className="chat-avatar">🤖</div>
               <div className="chat-bubble">
@@ -151,14 +224,12 @@ function ChatPage() {
             </div>
           )}
 
-          {/* Invisible anchor — we scroll to this */}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* INPUT AREA */}
+        {/* Input area */}
         <div className="chat-input-area">
           <div className="chat-input-row">
-            {/* Textarea — auto-grows as user types */}
             <textarea
               ref={textareaRef}
               className="chat-input"
