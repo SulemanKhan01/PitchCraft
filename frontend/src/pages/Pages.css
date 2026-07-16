@@ -410,6 +410,18 @@
   font-size: 0.875rem;
 }
 
+/* Streaming cursor — blinks while tokens are arriving */
+.streaming-cursor {
+  display: inline;
+  animation: blink 0.7s step-end infinite;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
 /* ============================================
    Cover Letter Page Styles
    ============================================ */
