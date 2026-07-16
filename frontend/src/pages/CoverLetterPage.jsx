@@ -17,26 +17,23 @@
    6. URL.revokeObjectURL(url) cleans up the temporary URL (frees memory)
    ============================================ */
 
-import { useState } from 'react'
 import { generateCoverLetter, downloadCoverLetterPDF } from '../services/api'
+import useCoverLetterStore from '../stores/useCoverLetterStore'
 import './Pages.css'
 
 function CoverLetterPage() {
-  /* STATE: The raw job description text the user pastes */
-  const [jdText, setJdText] = useState('')
-
-  /* STATE: The generated cover letter content */
-  const [generatedContent, setGeneratedContent] = useState('')
-
-  /* STATE: Loading states for generate and download */
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [isDownloading, setIsDownloading] = useState(false)
-
-  /* STATE: Number of chunks used in generation */
-  const [chunksUsed, setChunksUsed] = useState(0)
-
-  /* STATE: Error message */
-  const [error, setError] = useState(null)
+  const jdText = useCoverLetterStore((s) => s.jdText)
+  const generatedContent = useCoverLetterStore((s) => s.generatedContent)
+  const isGenerating = useCoverLetterStore((s) => s.isGenerating)
+  const isDownloading = useCoverLetterStore((s) => s.isDownloading)
+  const chunksUsed = useCoverLetterStore((s) => s.chunksUsed)
+  const error = useCoverLetterStore((s) => s.error)
+  const setJdText = useCoverLetterStore((s) => s.setJdText)
+  const setGeneratedContent = useCoverLetterStore((s) => s.setGeneratedContent)
+  const setIsGenerating = useCoverLetterStore((s) => s.setIsGenerating)
+  const setIsDownloading = useCoverLetterStore((s) => s.setIsDownloading)
+  const setChunksUsed = useCoverLetterStore((s) => s.setChunksUsed)
+  const setError = useCoverLetterStore((s) => s.setError)
 
   /* API CALL: Generate cover letter content from JD */
   async function handleGenerate() {
