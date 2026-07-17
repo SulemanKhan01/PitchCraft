@@ -1,53 +1,32 @@
-/* ============================================
-   App.jsx — Root Component & Router Setup
-   ============================================
-
-   CONCEPT: React Router
-
-   BrowserRouter: Listens to browser URL changes
-   Routes:       Container for all Route definitions
-   Route:        Maps a URL path to a component
-   Navigate:     Programmatically redirect to another URL
-
-   STRUCTURE:
-   <BrowserRouter>
-     <Routes>
-       <Route element={<Layout />}>           ← Wraps child routes with sidebar
-         <Route path="/chat" element={<ChatPage />} />
-         <Route path="/upload" element={<UploadPage />} />
-         <Route path="/cover-letter" element={<CoverLetterPage />} />
-         <Route path="/" element={<Navigate to="/chat" />} />  ← Default redirect
-       </Route>
-     </Routes>
-   </BrowserRouter>
-
-   When URL is "/chat":
-   → BrowserRouter detects URL change
-   → Routes finds matching Route
-   → Renders <Layout> (sidebar + <Outlet>)
-   → <Outlet> renders <ChatPage />
-   ============================================ */
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import ChatPage from './pages/ChatPage'
 import UploadPage from './pages/UploadPage'
 import CoverLetterPage from './pages/CoverLetterPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Layout route — wraps children with sidebar + main content area */}
+        {/* ── Public routes — no login needed ── */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* ── Protected routes — login required ── */}
         <Route element={<Layout />}>
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/upload" element={<UploadPage />} />
-          <Route path="/cover-letter" element={<CoverLetterPage />} />
-
-          {/* "/" redirects to "/chat" — Navigate is like a programmatic <a> */}
+          <Route path="/chat" element={
+            <ProtectedRoute><ChatPage /></ProtectedRoute>
+          } />
+          <Route path="/upload" element={
+            <ProtectedRoute><UploadPage /></ProtectedRoute>
+          } />
+          <Route path="/cover-letter" element={
+            <ProtectedRoute><CoverLetterPage /></ProtectedRoute>
+          } />
           <Route path="/" element={<Navigate to="/chat" replace />} />
-
-          {/* 404 — any unmatched URL redirects to chat */}
           <Route path="*" element={<Navigate to="/chat" replace />} />
         </Route>
       </Routes>

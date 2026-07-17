@@ -52,3 +52,5 @@ htmlcov/
 .gemini/
 .impeccable/
 
+
+*.db
