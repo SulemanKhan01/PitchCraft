@@ -53,4 +53,12 @@ htmlcov/
 .impeccable/
 
 
+# =====================================================
+# AI Tool Configurations (Local Only)
+# =====================================================
+.cursor/
+.codex/
+.gemini/
+.impeccable/
+.agents/
 *.db

@@ -1,37 +1,31 @@
-/* ============================================
-   Layout Component
-   ============================================
-
-   CONCEPT: Component Composition
-
-   This component creates the app shell:
-   - Sidebar (always visible on the left)
-   - Main content area (changes based on URL)
-
-   <Outlet /> is a react-router-dom placeholder.
-   Think of it like a "hole" in this component where
-   the matched child route's component gets rendered.
-
-   URL: /chat      →  <Layout> renders <ChatPage /> inside <Outlet />
-   URL: /upload    →  <Layout> renders <UploadPage /> inside <Outlet />
-   URL: /cover-letter → <Layout> renders <CoverLetterPage /> inside <Outlet />
-   ============================================ */
-
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
+import { useState, useCallback } from 'react'
 
 function Layout() {
+  const [collapsed, setCollapsed] = useState(false)
+
+  const handleToggle = useCallback((val) => {
+    setCollapsed(val)
+  }, [])
+
   return (
-    <>
-      {/* Sidebar — fixed on the left side, always visible */}
-      <Sidebar />
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Sidebar */}
+      <Sidebar onCollapse={handleToggle} />
 
       {/* Main content — shifts right to make room for sidebar */}
-      {/* <Outlet /> is WHERE child route components appear */}
-      <main className="main-content">
+      <main
+        className="main-content"
+        style={{
+          paddingLeft: collapsed ? '68px' : '240px',
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
         <Outlet />
       </main>
-    </>
+    </div>
   )
 }
 
