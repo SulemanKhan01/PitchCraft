@@ -1,66 +1,60 @@
 /* ============================================
    PitchCraft — Global Styles & Design Tokens
+   ALWAYS DARK THEME
    ============================================ */
 
-/* CSS CUSTOM PROPERTIES (Variables)
-   These are reusable values. Any CSS file can use them with var(--name).
-   We define them on :root (the <html> element) so they're global. */
-:root {
-  /* Colors */
-  --primary: #7c3aed;
-  --primary-hover: #6d28d9;
-  --primary-light: rgba(124, 58, 237, 0.1);
-  --bg: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-sidebar: #1e1b2e;
-  --text: #374151;
-  --text-light: #9ca3af;
-  --text-heading: #111827;
-  --text-sidebar: #d1d5db;
-  --text-sidebar-active: #ffffff;
-  --border: #e5e7eb;
-  --border-focus: #7c3aed;
-  --success: #10b981;
-  --error: #ef4444;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-  /* Typography */
+:root {
+  /* ---- Brand ---- */
+  --primary:        #7c3aed;
+  --primary-hover:  #6d28d9;
+  --primary-light:  rgba(124, 58, 237, 0.12);
+  --primary-glow:   rgba(124, 58, 237, 0.25);
+
+  /* ---- Background layers ---- */
+  --bg:             #0d0b14;
+  --bg-elevated:    #13101e;
+  --bg-secondary:   #1a1628;
+  --bg-tertiary:    #201c30;
+
+  /* ---- Text ---- */
+  --text:           #9ca3af;
+  --text-light:     #5b6473;
+  --text-heading:   #f1f0f5;
+  --text-muted:     #4b5563;
+
+  /* ---- Borders ---- */
+  --border:         rgba(255,255,255,0.07);
+  --border-strong:  rgba(255,255,255,0.12);
+  --border-focus:   rgba(124, 58, 237, 0.5);
+
+  /* ---- Shadows ---- */
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.4);
+  --shadow:     0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.6);
+
+  /* ---- Status ---- */
+  --success: #34d399;
+  --error:   #f87171;
+
+  /* ---- Type ---- */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'Fira Code', ui-monospace, Consolas, monospace;
 
-  /* Spacing */
-  --radius: 8px;
-  --radius-lg: 12px;
+  /* ---- Radii ---- */
+  --radius:    8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
 }
 
-/* DARK MODE — Override variables when user prefers dark theme
-   The browser tells us via prefers-color-scheme media query */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --primary: #a78bfa;
-    --primary-hover: #8b5cf6;
-    --primary-light: rgba(167, 139, 250, 0.15);
-    --bg: #0f0d15;
-    --bg-secondary: #1a1726;
-    --bg-sidebar: #0a0812;
-    --text: #9ca3af;
-    --text-light: #6b7280;
-    --text-heading: #f3f4f6;
-    --border: #2d2a3a;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
-  }
-}
-
-/* CSS RESET — Remove browser defaults for consistent rendering */
+/* Reset */
 *, *::before, *::after {
-  box-sizing: border-box;     /* width includes padding + border */
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* BASE STYLES */
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
@@ -75,42 +69,34 @@ body {
   min-height: 100vh;
 }
 
-/* #root is the single DOM node React manages */
 #root {
   min-height: 100vh;
-  display: flex;              /* Flexbox: children lay out in a row (sidebar + content) */
+  display: flex;
 }
 
-/* Headings */
-h1, h2, h3 {
+h1, h2, h3, h4 {
   color: var(--text-heading);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
-/* Links */
 a {
   color: var(--primary);
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
-}
-
-/* Buttons base */
 button {
   font-family: inherit;
   cursor: pointer;
   border: none;
-  border-radius: var(--radius);
+  background: none;
 }
 
-/* Code */
-code {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  background: var(--bg-secondary);
-  padding: 2px 6px;
-  border-radius: 4px;
+input, textarea {
+  font-family: inherit;
 }
+
+::-webkit-scrollbar         { width: 4px; height: 4px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
