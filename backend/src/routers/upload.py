@@ -5,6 +5,13 @@ from src.pipeline.pipeline import process_pdf
 from config import COLLECTION_NAME
 import shutil
 
+# for authentication
+# pyrefly: ignore [missing-import]
+from fastapi import Depends
+from src.auth.dependencies import get_current_user
+from src.models.user import User
+
+
 
 router = APIRouter(
     prefix = "/api/proposals",
@@ -15,7 +22,7 @@ upload_dir = "data/raw_pdfs"
 os.makedirs(upload_dir , exist_ok = True)
 
 @router.post("/upload")
-async def upload_proposal(file : UploadFile = File(...)):
+async def upload_proposal(file : UploadFile = File(...) , current_user: User = Depends(get_current_user)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400 , detail = "Only PDF files are allowed")
 

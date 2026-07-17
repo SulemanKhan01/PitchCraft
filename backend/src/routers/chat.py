@@ -6,6 +6,11 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
 
+
+from fastapi import Depends
+from src.auth.dependencies import get_current_user
+from src.models.user import User
+
 from src.retrieval.retriever import retrieve_chunks
 from src.services.query_betterment import (
     QueryBettermentPipeline,
@@ -33,7 +38,7 @@ class ChatRequest(BaseModel):
 
 
 @router.post("/chat")
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest , current_user: User = Depends(get_current_user)):
 
     # ---------------- Query Betterment ---------------- #
 
