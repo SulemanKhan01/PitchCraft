@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from src.routers import upload
 from src.routers import chat
 from src.routers import generate_coverletter
+from src.routers import auth
 
 # pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,6 +22,7 @@ app.add_middleware(
 app.include_router(upload.router)
 app.include_router(chat.router)
 app.include_router(generate_coverletter.router)
+app.include_router(auth.router)
 
 @app.get("/")
 def read_root():
