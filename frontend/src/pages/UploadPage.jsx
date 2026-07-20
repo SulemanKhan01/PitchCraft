@@ -21,6 +21,7 @@
    ============================================ */
 
 import { useRef } from 'react'
+import { useAuth } from '@clerk/clerk-react'
 import { uploadProposal } from '../services/api'
 import useUploadStore from '../stores/useUploadStore'
 import './Pages.css'
@@ -40,6 +41,7 @@ function UploadPage() {
      Unlike state, changing a ref does NOT cause a re-render.
      We use it to programmatically click the hidden file input. */
   const fileInputRef = useRef(null)
+  const { getToken } = useAuth()
 
   /* EVENT HANDLER: User clicks the dropzone */
   function handleDropzoneClick() {
@@ -86,9 +88,8 @@ function UploadPage() {
     setStatus(null)
 
     try {
-      /* This calls our api.js function which uses fetch() under the hood.
-         It sends a POST request with multipart/form-data containing the PDF. */
-      const result = await uploadProposal(selectedFile)
+      const token = await getToken()
+      const result = await uploadProposal(selectedFile, token)
 
       setStatus({
         type: 'success',

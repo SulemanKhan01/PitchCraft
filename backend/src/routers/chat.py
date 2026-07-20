@@ -8,8 +8,9 @@ from google import genai
 
 
 from fastapi import Depends
-from src.auth.dependencies import get_current_user
-from src.models.user import User
+# from src.auth.dependencies import get_current_user  # JWT — replaced by Clerk
+# from src.models.user import User                    # JWT — replaced by Clerk
+from src.auth.clerk_auth import get_current_user_clerk
 
 from src.retrieval.retriever import retrieve_chunks
 from src.services.query_betterment import (
@@ -38,7 +39,7 @@ class ChatRequest(BaseModel):
 
 
 @router.post("/chat")
-async def chat(request: ChatRequest , current_user: User = Depends(get_current_user)):
+async def chat(request: ChatRequest, current_user: dict = Depends(get_current_user_clerk)):
 
     # ---------------- Query Betterment ---------------- #
 

@@ -18,6 +18,7 @@
    ============================================ */
 
 import { generateCoverLetter, downloadCoverLetterPDF } from '../services/api'
+import { useAuth } from '@clerk/clerk-react'
 import useCoverLetterStore from '../stores/useCoverLetterStore'
 import './Pages.css'
 
@@ -34,6 +35,7 @@ function CoverLetterPage() {
   const setIsDownloading = useCoverLetterStore((s) => s.setIsDownloading)
   const setChunksUsed = useCoverLetterStore((s) => s.setChunksUsed)
   const setError = useCoverLetterStore((s) => s.setError)
+  const { getToken } = useAuth()
 
   /* API CALL: Generate cover letter content from JD */
   async function handleGenerate() {
@@ -44,7 +46,8 @@ function CoverLetterPage() {
     setGeneratedContent('')
 
     try {
-      const result = await generateCoverLetter(jdText)
+      const token = await getToken()
+      const result = await generateCoverLetter(jdText, token)
       setGeneratedContent(result.generated_content)
       setChunksUsed(result.num_chunks_used)
     } catch (err) {
@@ -63,7 +66,8 @@ function CoverLetterPage() {
 
     try {
       // Step 1: Fetch the PDF as binary data (Blob)
-      const blob = await downloadCoverLetterPDF(generatedContent)
+      const token = await getToken()
+      const blob = await downloadCoverLetterPDF(generatedContent, token)
 
       // Step 2: Create a temporary URL pointing to this blob in memory
       const url = URL.createObjectURL(blob)

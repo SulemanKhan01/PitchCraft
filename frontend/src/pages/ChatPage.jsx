@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
+import { useAuth } from '@clerk/clerk-react'
 import { sendChatMessage } from '../services/api'
 import useChatStore from '../stores/useChatStore'
 import './ChatPage.css'
@@ -47,6 +48,7 @@ function ChatPage() {
   const messagesEndRef = useRef(null)
   const textareaRef    = useRef(null)
   const [focused, setFocused] = useState(false)
+  const { getToken } = useAuth()
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -79,7 +81,8 @@ function ChatPage() {
 
     try {
       const history = [...cur, userMsg].map(m => ({ role: m.role, content: m.content }))
-      const result  = await sendChatMessage(q, history)
+      const token   = await getToken()
+      const result  = await sendChatMessage(q, history, token)
       addMessage({ role: 'assistant', content: result.answer })
     } catch (err) {
       addMessage({ role: 'assistant', content: `Something went wrong: ${err.message}` })
