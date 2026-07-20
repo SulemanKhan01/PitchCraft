@@ -10,7 +10,7 @@ function Layout() {
   }, [])
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
       {/* Sidebar */}
       <Sidebar onCollapse={handleToggle} />
 

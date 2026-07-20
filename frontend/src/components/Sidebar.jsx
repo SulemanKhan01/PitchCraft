@@ -1,10 +1,27 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useState, useCallback } from 'react'
+import { useClerk, useUser } from '@clerk/clerk-react'
+// import useAuthStore from '../stores/useAuthStore'  // JWT — replaced by Clerk
 import './Sidebar.css'
 
 function Sidebar({ onCollapse }) {
   const [collapsed, setCollapsed] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+
+  // const logout = useAuthStore((s) => s.logout)  // JWT — replaced by Clerk
+  // const user = useAuthStore((s) => s.user)       // JWT — replaced by Clerk
+  const { signOut } = useClerk()
+  const { user } = useUser()
+  const navigate = useNavigate()
+
+  /* Get the first two letters of the email for the avatar */
+  const userEmail = user?.primaryEmailAddress?.emailAddress || 'user@example.com'
+  const initials = userEmail.slice(0, 2).toUpperCase()
+
+  function handleLogout() {
+    signOut()
+    navigate('/login')
+  }
 
   const toggleSidebar = useCallback(() => {
     setCollapsed(prev => {
@@ -146,7 +163,7 @@ function Sidebar({ onCollapse }) {
             {!collapsed && <span className="sidebar__link-text">Billing</span>}
           </button>
 
-          <button className="sidebar__link sidebar__link-btn sidebar__link-logout">
+          <button className="sidebar__link sidebar__link-btn sidebar__link-logout" onClick={handleLogout} type="button">
             <span className="sidebar__link-icon-wrap">
               <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
@@ -183,17 +200,19 @@ function Sidebar({ onCollapse }) {
 
       {/* User Profile Footer */}
       <div className="sidebar__user-footer">
-        <div className="sidebar__user-avatar">AS</div>
+        <div className="sidebar__user-avatar">{initials}</div>
         {!collapsed && (
           <div className="sidebar__user-info">
-            <div className="sidebar__user-name">Ahsan Shahzad</div>
-            <div className="sidebar__user-email">ahsan@example.com</div>
+            <div className="sidebar__user-name">{userEmail.split('@')[0]}</div>
+            <div className="sidebar__user-email">{userEmail}</div>
           </div>
         )}
         {!collapsed && (
-          <button className="sidebar__user-menu-btn" type="button" onClick={() => setUserMenuOpen(o => !o)}>
+          <button className="sidebar__user-menu-btn" type="button" onClick={handleLogout} title="Log out">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" />
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
           </button>
         )}

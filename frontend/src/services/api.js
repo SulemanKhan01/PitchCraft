@@ -1,6 +1,6 @@
 const API_BASE = "http://localhost:8000"
 
-/* ── Helper: read token from localStorage and build the auth header ── */
+/* ── OLD JWT auth helper (commented out) ──────────────────────────────
 function authHeader() {
   const raw = localStorage.getItem('pitchcraft-auth')
   if (!raw) return {}
@@ -13,36 +13,23 @@ function authHeader() {
     return {}
   }
 }
+─────────────────────────────────────────────────────────────────────── */
+
+/* ── NEW Clerk auth helper ────────────────────────────────────────────
+   Pass the Clerk token (from useAuth().getToken()) into each function.
+   This keeps api.js as a plain JS file (no React hooks here).
+─────────────────────────────────────────────────────────────────────── */
+function authHeader(token) {
+  if (!token) return {}
+  return { 'Authorization': `Bearer ${token}` }
+}
 
 /* ══════════════════════════════════════════
-   AUTH
+   AUTH  (OLD — not needed with Clerk)
 ══════════════════════════════════════════ */
 
-export async function registerUser(email, password) {
-  const res = await fetch(`${API_BASE}/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  })
-  if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.detail || 'Registration failed')
-  }
-  return res.json()
-}
-
-export async function loginUser(email, password) {
-  const res = await fetch(`${API_BASE}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  })
-  if (!res.ok) {
-    const err = await res.json()
-    throw new Error(err.detail || 'Login failed')
-  }
-  return res.json()  // { access_token, token_type, email }
-}
+// export async function registerUser(email, password) { ... }  // handled by Clerk
+// export async function loginUser(email, password) { ... }     // handled by Clerk
 
 /* ══════════════════════════════════════════
    HEALTH
@@ -58,13 +45,13 @@ export async function checkHealth() {
    UPLOAD
 ══════════════════════════════════════════ */
 
-export async function uploadProposal(file) {
+export async function uploadProposal(file, token) {
   const formData = new FormData()
   formData.append('file', file)
 
   const res = await fetch(`${API_BASE}/api/proposals/upload`, {
     method: 'POST',
-    headers: { ...authHeader() },  // token — no Content-Type for FormData
+    headers: { ...authHeader(token) },
     body: formData
   })
 
@@ -79,12 +66,12 @@ export async function uploadProposal(file) {
    CHAT
 ══════════════════════════════════════════ */
 
-export async function sendChatMessage(question, history = []) {
+export async function sendChatMessage(question, history = [], token) {
   const res = await fetch(`${API_BASE}/api/chat/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...authHeader()
+      ...authHeader(token)
     },
     body: JSON.stringify({ question, history, debug: false })
   })
@@ -100,12 +87,12 @@ export async function sendChatMessage(question, history = []) {
    COVER LETTER
 ══════════════════════════════════════════ */
 
-export async function generateCoverLetter(jdText) {
+export async function generateCoverLetter(jdText, token) {
   const res = await fetch(`${API_BASE}/api/generate/cover-letter`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...authHeader()
+      ...authHeader(token)
     },
     body: JSON.stringify({ jd_text: jdText })
   })
@@ -117,12 +104,12 @@ export async function generateCoverLetter(jdText) {
   return res.json()
 }
 
-export async function downloadCoverLetterPDF(text) {
+export async function downloadCoverLetterPDF(text, token) {
   const res = await fetch(`${API_BASE}/api/generate/cover-letter/pdf`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...authHeader()
+      ...authHeader(token)
     },
     body: JSON.stringify({ text })
   })

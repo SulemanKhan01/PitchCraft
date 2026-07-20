@@ -10,8 +10,9 @@ from src.services.cover_letter.pdf_generator import generate_minimal_pdf
 
 # for authentication
 from fastapi import Depends
-from src.auth.dependencies import get_current_user
-from src.models.user import User
+# from src.auth.dependencies import get_current_user  # JWT — replaced by Clerk
+# from src.models.user import User                    # JWT — replaced by Clerk
+from src.auth.clerk_auth import get_current_user_clerk
 
 
 router = APIRouter(
@@ -37,8 +38,7 @@ class PDFRequest(BaseModel):
 
 
 @router.post("/cover-letter" , response_model = GenerateResponse)
-
-async def generate_cover_letter(request : GenerateRequest , current_user: User = Depends(get_current_user)):
+async def generate_cover_letter(request: GenerateRequest, current_user: dict = Depends(get_current_user_clerk)):
     
 
     if not request.jd_text or not request.jd_text.strip():
@@ -56,7 +56,7 @@ async def generate_cover_letter(request : GenerateRequest , current_user: User =
 
 
 @router.post("/cover-letter/pdf")
-async def download_pdf(request: PDFRequest , current_user: User = Depends(get_current_user)):
+async def download_pdf(request: PDFRequest, current_user: dict = Depends(get_current_user_clerk)):
     if not request.text or not request.text.strip():
         raise HTTPException(status_code=400, detail="text cannot be empty.")
 

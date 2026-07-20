@@ -8,8 +8,9 @@ import shutil
 # for authentication
 # pyrefly: ignore [missing-import]
 from fastapi import Depends
-from src.auth.dependencies import get_current_user
-from src.models.user import User
+# from src.auth.dependencies import get_current_user  # JWT — replaced by Clerk
+# from src.models.user import User                    # JWT — replaced by Clerk
+from src.auth.clerk_auth import get_current_user_clerk
 
 
 
@@ -22,7 +23,7 @@ upload_dir = "data/raw_pdfs"
 os.makedirs(upload_dir , exist_ok = True)
 
 @router.post("/upload")
-async def upload_proposal(file : UploadFile = File(...) , current_user: User = Depends(get_current_user)):
+async def upload_proposal(file: UploadFile = File(...), current_user: dict = Depends(get_current_user_clerk)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400 , detail = "Only PDF files are allowed")
 
