@@ -1,48 +1,45 @@
-// ── OLD JWT-based LoginPage (commented out) ──────────────────────────
-// import { useState } from 'react'
-// import { useNavigate, Link } from 'react-router-dom'
-// import { loginUser } from '../services/api'
-// import useAuthStore from '../stores/useAuthStore'
-// import './AuthPages.css'
-//
-// function LoginPage() {
-//   const [email, setEmail] = useState('')
-//   const [password, setPassword] = useState('')
-//   const [error, setError] = useState('')
-//   const [loading, setLoading] = useState(false)
-//   const setAuth = useAuthStore((s) => s.setAuth)
-//   const navigate = useNavigate()
-//   async function handleSubmit(e) {
-//     e.preventDefault()
-//     setError('')
-//     setLoading(true)
-//     try {
-//       const data = await loginUser(email, password)
-//       setAuth(data.access_token, { email: data.email })
-//       navigate('/chat')
-//     } catch (err) {
-//       setError(err.message)
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-//   return ( ... )
-// }
-// ─────────────────────────────────────────────────────────────────────
+/**
+ * LoginPage.jsx
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Auth Contract (PRESERVED — zero changes):
+ *   • Clerk <SignIn /> — routing="hash", fallbackRedirectUrl="/chat"
+ *   • All Clerk-internal handlers: OAuth, email/password, MFA, etc.
+ *
+ * Visual layer: wrapped in AuthLayout shell (new, non-breaking).
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
 
 import { SignIn } from '@clerk/clerk-react'
+import AuthLayout from '../components/AuthLayout'
 
 function LoginPage() {
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-      backgroundColor: '#0f0f0f'
-    }}>
-      <SignIn routing="hash" fallbackRedirectUrl="/chat" />
-    </div>
+    <AuthLayout mode="login">
+      {/*
+        Clerk <SignIn /> — ALL props preserved exactly.
+        appearance prop styles it to match our design system
+        via CSS overrides in AuthLayout.css (.al-clerk-shell .cl-*)
+      */}
+      <SignIn
+        routing="hash"
+        fallbackRedirectUrl="/chat"
+        appearance={{
+          variables: {
+            /* Map Clerk's color system to our design tokens */
+            colorPrimary:          '#7c3aed',
+            colorBackground:       'transparent',
+            colorText:             '#f4f2ff',
+            colorTextSecondary:    '#b0adc0',
+            colorInputBackground:  'rgba(32,28,48,0.9)',
+            colorInputText:        '#f4f2ff',
+            colorDanger:           '#f87171',
+            borderRadius:          '12px',
+            fontFamily:            'Inter, system-ui, sans-serif',
+            fontSize:              '15px',
+          },
+        }}
+      />
+    </AuthLayout>
   )
 }
 
