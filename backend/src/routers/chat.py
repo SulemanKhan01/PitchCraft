@@ -38,8 +38,26 @@ class ChatRequest(BaseModel):
     debug: bool = False
 
 
+GREETING_WORDS = {
+    "hi", "hello", "hey", "greetings", "howdy", "yo", "sup",
+    "good morning", "good afternoon", "good evening",
+    "what's up", "wasup", "whatsup",
+}
+
+def _is_greeting(text: str) -> bool:
+    cleaned = text.strip().lower().rstrip("?!.,")
+    return cleaned in GREETING_WORDS or any(
+        cleaned.startswith(w) for w in ("hi ", "hello ", "hey ", "good morning", "good afternoon", "good evening")
+    )
+
+
 @router.post("/chat")
 async def chat(request: ChatRequest, current_user: dict = Depends(get_current_user_clerk)):
+
+    # ---------------- Greeting Fast-Path ---------------- #
+
+    if _is_greeting(request.question):
+        return {"answer": "Hello! How can I help you today?"}
 
     # ---------------- Query Betterment ---------------- #
 

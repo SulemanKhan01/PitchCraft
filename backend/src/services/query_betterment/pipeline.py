@@ -15,7 +15,7 @@ Pipeline execution order:
 
 Design principles applied:
   Single Responsibility  — each stage does exactly one thing
-  Open / Closed          — add new stages without touching existing ones
+  Open / Closed          — add new stage without touching existing ones
   Dependency Injection   — all collaborators injected in __init__
   Graceful Degradation   — any stage failure falls back silently; pipeline continues
 """
@@ -46,7 +46,6 @@ from .conversation_context import ConversationContext
 from .confidence           import ConfidenceAggregator, StageConfidence
 from .logger               import PipelineLogger
 from .utils                import timer
-from .input_validation    import validate
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Module logger
@@ -165,33 +164,6 @@ class QueryBettermentPipeline:
                                                 confidence=1.0,
                                             )
         keyword_result:   KeywordResult   = KeywordResult(confidence=0.5)
-
-        # ── Pre-Stage: Input Validation ────────────────────────────────────────
-        validation = validate(current_query)
-        if validation.is_valid:
-            current_query = validation.cleaned_query
-            if validation.warning_flags:
-                logger.warning(
-                    "Validation warnings for query [%s…]: %s",
-                    current_query[:60],
-                    ", ".join(validation.warning_flags),
-                )
-        else:
-            logger.warning(
-                "Validation rejected query [%s…]: %s",
-                original_query[:60],
-                "; ".join(validation.validation_errors),
-            )
-            return QueryBettermentResult(
-                original_query=original_query,
-                final_query="",
-                all_queries=[],
-                intent=IntentResult(intent=IntentType.SEARCH, confidence=0.0),
-                keywords=KeywordResult(confidence=0.0),
-                overall_confidence=0.0,
-                debug=DebugTrace(traces=[]) if debug_mode else None,
-                total_latency_ms=round((time.perf_counter() - pipeline_start) * 1_000, 2),
-            )
 
         # ── Phase 0: Conversation Context ─────────────────────────────────────
         current_query, conf, trace = self._run_context_resolution(
