@@ -34,6 +34,7 @@ router = APIRouter(
 
 class ChatRequest(BaseModel):
     question: str
+    previous_interaction_id: Optional[str] = None
     history: Optional[list[ConversationTurn]] = None
     debug: bool = False
 
@@ -57,7 +58,9 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_us
     # ---------------- Greeting Fast-Path ---------------- #
 
     if _is_greeting(request.question):
-        return {"answer": "Hello! How can I help you today?"}
+        return {"answer": "Hello! How can I help you today?",
+                "interaction_id": request.previous_interaction_id
+        }
 
     # ---------------- Query Betterment ---------------- #
 
@@ -78,49 +81,71 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_us
     if not chunks:
 
         prompt = f"""
-You are an expert Enterprise AI Assistant.
+        You are an expert Enterprise AI Assistant.
 
-Answer the user's question using your own reliable knowledge.
+        Answer the user's question using your own reliable knowledge.
 
-Instructions:
+        Instructions:
 
-- Never mention:
-    - Knowledge Base
-    - Documents
-    - Proposals
-    - Context
-    - RAG
-    - Retrieval
-    - Internal Search
+        - Never mention:
+            - Knowledge Base
+            - Documents
+            - Proposals
+            - Context
+            - RAG
+            - Retrieval
+            - Internal Search
 
-- Never say:
-    - I couldn't find the information.
-    - No relevant documents were found.
-    - The proposal doesn't contain this.
+        - Never say:
+            - I couldn't find the information.
+            - No relevant documents were found.
+            - The proposal doesn't contain this.
 
-- If you know the answer, answer confidently.
+        - If you know the answer, answer confidently.
 
-- If the question requires confidential or impossible-to-know information,
-  politely explain that the exact information cannot be confirmed and provide
-  the best general guidance.
+        - If the question requires confidential or impossible-to-know information,
+        politely explain that the exact information cannot be confirmed and provide
+        the best general guidance.
 
-- Use Markdown formatting when appropriate.
+        - Use Markdown formatting when appropriate.
 
-User Question:
+        User Question:
 
-{request.question}
+        {request.question}
 
-Answer:
-"""
+        Answer:
+        """
 
-        response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
-            contents=prompt,
-        )
+        kwargs = {
+            "model": "gemini-3.1-flash-lite",
+            "input": prompt,
+        }
+
+        if request.previous_interaction_id and request.previous_interaction_id.strip():
+            kwargs["previous_interaction_id"] = request.previous_interaction_id.strip()
+
+        try:
+            interaction = client.interactions.create(**kwargs)
+        except Exception as exc:
+            if "previous_interaction_id" in kwargs:
+                kwargs.pop("previous_interaction_id", None)
+                interaction = client.interactions.create(**kwargs)
+            else:
+                raise exc
+
+
+        print("*****************interaction****************")
+        print(interaction)
+
+        answer_text = interaction.output_text.strip() if hasattr(interaction, "output_text") and interaction.output_text else ""
 
         result = {
-            "answer": response.text.strip()
+            "answer": answer_text,
+            "interaction_id": interaction.id
         }
+
+        print("*****************result****************")
+        print(result)
 
     # ============================================================
     # CASE 2: Chunks Found → Use RAG
@@ -136,47 +161,67 @@ Answer:
         )
 
         prompt = f"""
-You are an expert Enterprise AI Assistant.
+        You are an expert Enterprise AI Assistant.
 
-Use the provided context as the primary source of truth.
+        Use the provided context as the primary source of truth.
 
-Instructions:
+        Instructions:
 
-- If the context answers the question, answer from it.
+        - If the context answers the question, answer from it.
 
-- If the context is incomplete, supplement it with your own reliable
-  general knowledge.
+        - If the context is incomplete, supplement it with your own reliable
+        general knowledge.
 
-- Never mention:
-    - Context
-    - Documents
-    - RAG
-    - Retrieval
-    - Knowledge Base
-    - Proposals
+        - Never mention:
+            - Context
+            - Documents
+            - RAG
+            - Retrieval
+            - Knowledge Base
+            - Proposals
 
-- Never fabricate confidential information.
+        - Never fabricate confidential information.
 
-Context:
+        Context:
 
-{context}
+        {context}
 
-User Question:
+        User Question:
 
-{request.question}
+        {request.question}
 
-Answer:
-"""
+        Answer:
+        """
 
-        response = client.models.generate_content(
-            model="gemini-3.1-flash-lite",
-            contents=prompt,
-        )
-
-        result = {
-            "answer": response.text.strip()
+        kwargs = {
+            "model": "gemini-3.1-flash-lite",
+            "input": prompt,
         }
 
+        if request.previous_interaction_id and request.previous_interaction_id.strip():
+            kwargs["previous_interaction_id"] = request.previous_interaction_id.strip()
+
+        try:
+            interaction = client.interactions.create(**kwargs)
+        except Exception as exc:
+            if "previous_interaction_id" in kwargs:
+                kwargs.pop("previous_interaction_id", None)
+                interaction = client.interactions.create(**kwargs)
+            else:
+                raise exc
+        
+        print("*****************interaction****************")
+        print(interaction)
+
+        answer_text = interaction.output_text.strip() if hasattr(interaction, "output_text") and interaction.output_text else ""
+
+        result = {
+            "answer": answer_text,
+            "interaction_id": interaction.id
+        }
+
+        print("*****************result****************")
+        print(result)
     # ---------------- Debug Response ---------------- #
 
     if request.debug:
