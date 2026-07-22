@@ -66,14 +66,19 @@ export async function uploadProposal(file, token) {
    CHAT
 ══════════════════════════════════════════ */
 
-export async function sendChatMessage(question, history = [], token) {
+export async function sendChatMessage(question, history = [], token, previous_interaction_id = null) {
   const res = await fetch(`${API_BASE}/api/chat/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...authHeader(token)
     },
-    body: JSON.stringify({ question, history, debug: false })
+    body: JSON.stringify({
+      question,
+      history,
+      debug: false,
+      previous_interaction_id
+    })
   })
 
   if (!res.ok) {
