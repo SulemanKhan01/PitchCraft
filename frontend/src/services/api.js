@@ -45,11 +45,11 @@ export async function checkHealth() {
    UPLOAD
 ══════════════════════════════════════════ */
 
-export async function uploadProposal(file, token) {
+export async function uploadProposal(file, targetCollection, token) {
   const formData = new FormData()
   formData.append('file', file)
 
-  const res = await fetch(`${API_BASE}/api/proposals/upload`, {
+  const res = await fetch(`${API_BASE}/api/proposals/upload?target_collection=${targetCollection}`, {
     method: 'POST',
     headers: { ...authHeader(token) },
     body: formData
@@ -61,6 +61,7 @@ export async function uploadProposal(file, token) {
   }
   return res.json()
 }
+
 
 /* ══════════════════════════════════════════
    CHAT

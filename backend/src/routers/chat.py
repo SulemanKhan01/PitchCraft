@@ -5,6 +5,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
+
+from src.services.web_search import search_web, format_web_results_as_context
+
 
 
 from fastapi import Depends
@@ -72,49 +76,71 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_us
 
     # ---------------- Retrieve Context ---------------- #
 
-    chunks = retrieve_chunks(qb_result.final_query)
+    raw_chunks = retrieve_chunks(request.question)
+    print("--- RAW CHUNKS FOUND BY QDRANT ---")
+    for c in raw_chunks:
+        print(f"Document: {c['document_name']} | Score: {c['score']} | Snippet: {c['text'][:100]}...")
+    print("---------------------------------")
 
-    # ============================================================
-    # CASE 1: No Chunks Found → Gemini answers from own knowledge
+    SCORE_THRESHOLD = 0.60
+    chunks = [c for c in raw_chunks if c.get("score", 0) >= SCORE_THRESHOLD]
+
+       # ============================================================
+    # CASE 1: No Chunks Found → Web Search → Gemini answers with web context
     # ============================================================
 
     if not chunks:
 
-        prompt = f"""
-        You are an expert Enterprise AI Assistant.
+        # --- Try Tavily web search first ---
+        web_results = search_web(request.question, max_results=5)
+        web_context = format_web_results_as_context(web_results)
 
-        Answer the user's question using your own reliable knowledge.
+        if web_context:
+            # We got web results — use them as context
+            prompt = f"""
+            You are an expert Enterprise AI Assistant.
 
-        Instructions:
+            Use the web search results below as your primary source of information.
 
-        - Never mention:
-            - Knowledge Base
-            - Documents
-            - Proposals
-            - Context
-            - RAG
-            - Retrieval
-            - Internal Search
+            Instructions:
+            - Answer the user's question based on the web search results provided.
+            - If the results are relevant, cite the source URL naturally (e.g., "According to [source]...").
+            - If the web results are not relevant to the question, answer from your own reliable knowledge.
+            - Use Markdown formatting when appropriate.
+            - Never mention: RAG, Retrieval, Knowledge Base, Documents, Proposals, Vector DB.
 
-        - Never say:
-            - I couldn't find the information.
-            - No relevant documents were found.
-            - The proposal doesn't contain this.
+            {web_context}
 
-        - If you know the answer, answer confidently.
+            User Question:
 
-        - If the question requires confidential or impossible-to-know information,
-        politely explain that the exact information cannot be confirmed and provide
-        the best general guidance.
+            {request.question}
 
-        - Use Markdown formatting when appropriate.
+            Answer:
+            """
+            print("**** Web search results found. Using web context. ****")
 
-        User Question:
+        else:
+            # No web results — fall back to Gemini's own knowledge
+            prompt = f"""
+            You are an expert Enterprise AI Assistant.
 
-        {request.question}
+            Answer the user's question using your own reliable knowledge.
 
-        Answer:
-        """
+            Instructions:
+            - If you know the answer, answer confidently.
+            - Use Markdown formatting when appropriate.
+            - Never mention: Knowledge Base, Documents, Proposals, Context, RAG, Retrieval.
+            - If the question requires confidential or impossible-to-know information,
+              politely explain and provide the best general guidance.
+
+            User Question:
+
+            {request.question}
+
+            Answer:
+            """
+            print("**** No web results found. Falling back to Gemini knowledge. ****")
+
 
         kwargs = {
             "model": "gemini-3.1-flash-lite",
@@ -133,19 +159,17 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_us
             else:
                 raise exc
 
-
-        print("*****************interaction****************")
-        print(interaction)
-
         answer_text = interaction.output_text.strip() if hasattr(interaction, "output_text") and interaction.output_text else ""
 
         result = {
             "answer": answer_text,
-            "interaction_id": interaction.id
+            "interaction_id": interaction.id,
+            "source": "web_search" if web_context else "gemini_knowledge",
         }
 
-        print("*****************result****************")
+        print("*****************web search result****************")
         print(result)
+
 
     # ============================================================
     # CASE 2: Chunks Found → Use RAG
@@ -210,8 +234,7 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_us
             else:
                 raise exc
         
-        print("*****************interaction****************")
-        print(interaction)
+
 
         answer_text = interaction.output_text.strip() if hasattr(interaction, "output_text") and interaction.output_text else ""
 

@@ -20,13 +20,15 @@
    - onChange: When a file is selected via the hidden input
    ============================================ */
 
-import { useRef } from 'react'
 import { useAuth } from '@clerk/clerk-react'
 import { uploadProposal } from '../services/api'
 import useUploadStore from '../stores/useUploadStore'
 import './Pages.css'
+import { useRef, useState } from 'react' // Import useState
+
 
 function UploadPage() {
+  const [targetCollection, setTargetCollection] = useState('cover_letter')
   const selectedFile = useUploadStore((s) => s.selectedFile)
   const isUploading = useUploadStore((s) => s.isUploading)
   const status = useUploadStore((s) => s.status)
@@ -35,6 +37,7 @@ function UploadPage() {
   const setIsUploading = useUploadStore((s) => s.setIsUploading)
   const setStatus = useUploadStore((s) => s.setStatus)
   const setIsDragOver = useUploadStore((s) => s.setIsDragOver)
+
 
   /* REF — A reference to a DOM element.
      useRef gives us access to the actual <input> element in the DOM.
@@ -89,11 +92,11 @@ function UploadPage() {
 
     try {
       const token = await getToken()
-      const result = await uploadProposal(selectedFile, token)
+      const result = await uploadProposal(selectedFile, targetCollection, token)
 
       setStatus({
         type: 'success',
-        message: `Uploaded "${selectedFile.name}" — categorized as "${result.category}" (${result.num_chunks} chunks indexed)`
+        message: `Uploaded "${selectedFile.name}" — categorized as "${result.category}" (${result.chunks_created || result.num_chunks || 0} chunks indexed in ${targetCollection === 'proposal' ? 'Proposal' : 'Cover Letter'} database)`
       })
       setSelectedFile(null)  // Clear the selected file after success
     } catch (error) {
@@ -117,6 +120,43 @@ function UploadPage() {
         <p className="page-subtitle">
           Upload PDF proposals to build your knowledge base for chat retrieval.
         </p>
+      </div>
+
+      {/* Target Database Selection Dropdown */}
+      <div className="upload-select-container" style={{ marginBottom: '24px' }}>
+        <label
+          htmlFor="collection-select"
+          style={{
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            color: 'var(--text)'
+          }}
+        >
+          Select Target Vector Database
+        </label>
+        <select
+          id="collection-select"
+          value={targetCollection}
+          onChange={(e) => setTargetCollection(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            borderRadius: 'var(--radius, 6px)',
+            backgroundColor: 'var(--bg-secondary, #1e293b)',
+            border: '1px solid var(--border, rgba(255, 255, 255, 0.1))',
+            color: 'var(--text, #fff)',
+            fontSize: '0.9375rem',
+            outline: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            transition: 'border-color 0.2s'
+          }}
+        >
+          <option value="cover_letter">Cover Letter Reference Collection</option>
+          <option value="proposal">Proposal Reference Collection</option>
+        </select>
       </div>
 
       {/* HIDDEN FILE INPUT — not visible, triggered programmatically */}
