@@ -8,7 +8,8 @@ load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 # --- Qdrant Settings ---
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", None)
-COLLECTION_NAME = os.getenv("COLLECTION_NAME", "pitchcraft_proposals")
+COLLECTION_NAME = os.getenv("COLLECTION_NAME", "pitchcraft_cover_letter_kb")
+PROPOSAL_KB_COLLECTION = os.getenv("PROPOSAL_KB_COLLECTION", "pitchcraft_proposals_kb")
 
 # --- Embedding Settings ---
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "gemini-embedding-2")

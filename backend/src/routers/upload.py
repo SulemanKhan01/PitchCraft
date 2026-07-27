@@ -2,7 +2,7 @@ from sys import prefix
 from fastapi import APIRouter , UploadFile , File, HTTPException
 import os
 from src.pipeline.pipeline import process_pdf
-from config import COLLECTION_NAME
+from config import COLLECTION_NAME , PROPOSAL_KB_COLLECTION
 import shutil
 
 # for authentication
@@ -23,9 +23,15 @@ upload_dir = "data/raw_pdfs"
 os.makedirs(upload_dir , exist_ok = True)
 
 @router.post("/upload")
-async def upload_proposal(file: UploadFile = File(...), current_user: dict = Depends(get_current_user_clerk)):
+async def upload_proposal(target_collection: str = "cover_letter",file: UploadFile = File(...), current_user: dict = Depends(get_current_user_clerk)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400 , detail = "Only PDF files are allowed")
+
+    if target_collection == "proposal":
+        collection_name = PROPOSAL_KB_COLLECTION
+    else:
+        collection_name = COLLECTION_NAME
+
 
 
     file_path = os.path.join(upload_dir , file.filename)
@@ -33,7 +39,7 @@ async def upload_proposal(file: UploadFile = File(...), current_user: dict = Dep
         shutil.copyfileobj(file.file , buffer)
     
     try:
-        result = process_pdf(file_path , collection_name = COLLECTION_NAME)
+        result = process_pdf(file_path , collection_name = collection_name)
 
 
         return {
