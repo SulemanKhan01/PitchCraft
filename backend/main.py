@@ -1,29 +1,46 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+# ── Existing routers ──────────────────────────────────────────────────────────
 from src.routers import upload
 from src.routers import chat
 from src.routers import generate_coverletter
-# from src.routers import auth  # JWT — login/register now handled by Clerk
 
-# pyrefly: ignore [missing-import]
-from fastapi.middleware.cors import CORSMiddleware
+# ── New routers ───────────────────────────────────────────────────────────────
+from src.routers import conversations
+from src.routers import generate_proposal
+
+# ── Database setup ────────────────────────────────────────────────────────────
+from database import engine, Base
+
+# Import models so SQLAlchemy registers them before create_all runs
+from src.models import user          # existing user model
+from src.models import conversation  # new conversation + message models
+
+# Create all tables in PostgreSQL (runs once on startup, safe to run multiple times)
+Base.metadata.create_all(bind=engine)
 
 
-app = FastAPI()
+# ── App ───────────────────────────────────────────────────────────────────────
+app = FastAPI(title="PitchCraft API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins =["http://localhost:5173"],
-    allow_credentials = True,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
     allow_methods=["*"],
-    allow_headers = ["*"],
+    allow_headers=["*"],
 )
 
+# ── Register routers ──────────────────────────────────────────────────────────
 app.include_router(upload.router)
 app.include_router(chat.router)
 app.include_router(generate_coverletter.router)
+app.include_router(conversations.router)       # ← NEW
+app.include_router(generate_proposal.router)   # ← NEW
 # app.include_router(auth.router)  # JWT — replaced by Clerk
+
 
 @app.get("/")
 def read_root():
-    return {"msg" : "Server is running"}
+    return {"msg": "Server is running"}
