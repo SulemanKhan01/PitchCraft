@@ -65,9 +65,17 @@ export async function uploadProposal(file, targetCollection, token) {
 
 /* ══════════════════════════════════════════
    CHAT
+   — now accepts conversation_id so the
+     backend can auto-save messages to DB
 ══════════════════════════════════════════ */
 
-export async function sendChatMessage(question, history = [], token, previous_interaction_id = null) {
+export async function sendChatMessage(
+  question,
+  history = [],
+  token,
+  previous_interaction_id = null,
+  conversation_id = null          // ← NEW: pass this to enable DB saving
+) {
   const res = await fetch(`${API_BASE}/api/chat/chat`, {
     method: 'POST',
     headers: {
@@ -78,13 +86,115 @@ export async function sendChatMessage(question, history = [], token, previous_in
       question,
       history,
       debug: false,
-      previous_interaction_id
+      previous_interaction_id,
+      conversation_id              // ← NEW: included in every chat request
     })
   })
 
   if (!res.ok) {
     const err = await res.json()
     throw new Error(err.detail || 'Chat request failed')
+  }
+  return res.json()
+}
+
+/* ══════════════════════════════════════════
+   CONVERSATIONS
+   — manage chat sessions in the database
+══════════════════════════════════════════ */
+
+/**
+ * Create a new conversation session.
+ * Call this once when the user opens the chat page.
+ * Returns { id, title, created_at, updated_at }
+ */
+export async function createConversation(token) {
+  const res = await fetch(`${API_BASE}/api/conversations/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ title: 'New Conversation' })
+  })
+
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.detail || 'Failed to create conversation')
+  }
+  return res.json()
+}
+
+/**
+ * List all conversations for the current user (for sidebar).
+ * Returns array of { id, title, created_at, updated_at }
+ */
+export async function listConversations(token) {
+  const res = await fetch(`${API_BASE}/api/conversations/`, {
+    method: 'GET',
+    headers: { ...authHeader(token) }
+  })
+
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.detail || 'Failed to load conversations')
+  }
+  return res.json()
+}
+
+/**
+ * Load a specific conversation with all its messages.
+ * Returns { id, title, messages: [{ role, content, timestamp }] }
+ */
+export async function getConversation(conversationId, token) {
+  const res = await fetch(`${API_BASE}/api/conversations/${conversationId}`, {
+    method: 'GET',
+    headers: { ...authHeader(token) }
+  })
+
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.detail || 'Failed to load conversation')
+  }
+  return res.json()
+}
+
+/**
+ * Delete a conversation and all its messages.
+ */
+export async function deleteConversation(conversationId, token) {
+  const res = await fetch(`${API_BASE}/api/conversations/${conversationId}`, {
+    method: 'DELETE',
+    headers: { ...authHeader(token) }
+  })
+
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Failed to delete conversation')
+  }
+}
+
+/* ══════════════════════════════════════════
+   PROPOSAL GENERATION
+══════════════════════════════════════════ */
+
+/**
+ * Generate a proposal by analyzing the full conversation from the DB.
+ * Returns { proposal_content, requirements, web_search_used, message_count }
+ */
+export async function generateProposal(conversationId, token) {
+  const res = await fetch(`${API_BASE}/api/generate/proposal`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ conversation_id: conversationId })
+  })
+
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.detail || 'Proposal generation failed')
   }
   return res.json()
 }

@@ -11,7 +11,7 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@clerk/clerk-react'
-import { sendChatMessage } from '../services/api'
+import { sendChatMessage, createConversation, generateProposal } from '../services/api'
 import useChatStore from '../stores/useChatStore'
 import './ChatPage.css'
 
@@ -97,6 +97,98 @@ const ExportIcon = () => (
     <line x1="12" y1="15" x2="12" y2="3" />
   </svg>
 )
+
+const FileTextIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
+  </svg>
+)
+
+const CloseIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+)
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PROPOSAL MODAL COMPONENT
+───────────────────────────────────────────────────────────────────────────── */
+
+function ProposalModal({ data, onClose }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = useCallback(() => {
+    if (!data?.proposal_content) return
+    navigator.clipboard.writeText(data.proposal_content).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }, [data])
+
+  const handleDownloadMarkdown = useCallback(() => {
+    if (!data?.proposal_content) return
+    const blob = new Blob([data.proposal_content], { type: 'text/markdown' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${(data.conversation_title || 'Proposal').replace(/[^a-z0-9]/gi, '_')}.md`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [data])
+
+  if (!data) return null
+
+  return (
+    <div className="cp-modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="cp-proposal-title">
+      <div className="cp-modal-dialog" onClick={(e) => e.stopPropagation()}>
+        <header className="cp-modal-header">
+          <div className="cp-modal-header-title-wrap">
+            <div className="cp-modal-badge">
+              <FileTextIcon />
+              <span>AI Proposal</span>
+            </div>
+            <h2 id="cp-proposal-title" className="cp-modal-title">
+              {data.conversation_title || 'Generated Project Proposal'}
+            </h2>
+          </div>
+          <button className="cp-icon-btn" onClick={onClose} aria-label="Close proposal modal" type="button">
+            <CloseIcon />
+          </button>
+        </header>
+
+        <div className="cp-modal-body">
+          {data.web_search_used && (
+            <div className="cp-modal-info-banner">
+              <SparkleIcon />
+              <span>Includes real-time web research from Tavily & deep analysis of {data.message_count || 'all'} chat turns.</span>
+            </div>
+          )}
+
+          <div className="cp-proposal-content-text">
+            {data.proposal_content}
+          </div>
+        </div>
+
+        <footer className="cp-modal-footer">
+          <button className="cp-btn-secondary" onClick={handleDownloadMarkdown} type="button">
+            <ExportIcon />
+            <span>Download .MD</span>
+          </button>
+          <button className={`cp-btn-primary${copied ? ' cp-btn--copied' : ''}`} onClick={handleCopy} type="button">
+            <CopyIcon />
+            <span>{copied ? 'Copied!' : 'Copy Proposal'}</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+  )
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SUGGESTION CHIPS — unchanged from original, just referenced below
@@ -230,9 +322,30 @@ function ChatPage() {
   const [charCount, setCharCount] = useState(0)
 
   const [interactionId, setInteractionId] = useState(null)
-
+  const [activeConvId, setActiveConvId] = useState(null)
+  const [isGeneratingProposal, setIsGeneratingProposal] = useState(false)
+  const [proposalData, setProposalData] = useState(null)
+  const [showProposalModal, setShowProposalModal] = useState(false)
 
   const { getToken } = useAuth()
+
+  /* ── Session init: Create DB conversation session on mount ── */
+  useEffect(() => {
+    async function initSession() {
+      try {
+        const token = await getToken()
+        if (token) {
+          const conv = await createConversation(token)
+          if (conv?.id) {
+            setActiveConvId(conv.id)
+          }
+        }
+      } catch (err) {
+        console.warn('Auto-create conversation session failed:', err)
+      }
+    }
+    initSession()
+  }, [getToken])
 
   /* ── Auto-scroll: follows new messages — PRESERVED ── */
   useEffect(() => {
@@ -279,7 +392,7 @@ function ChatPage() {
     }
   }, [input]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── Send message — API contract UNCHANGED ── */
+  /* ── Send message — API contract UNCHANGED + DB auto-save enabled ── */
   async function handleSend() {
     const { messages: cur, isLoading: busy } = useChatStore.getState()
     const q = input.trim()
@@ -295,7 +408,7 @@ function ChatPage() {
     try {
       const history = [...cur, userMsg].map(m => ({ role: m.role, content: m.content }))
       const token = await getToken()
-      const result = await sendChatMessage(q, history, token, interactionId)
+      const result = await sendChatMessage(q, history, token, interactionId, activeConvId)
       if (result.interaction_id) {
         setInteractionId(result.interaction_id)
       }
@@ -307,6 +420,29 @@ function ChatPage() {
       setIsLoading(false)
     }
   }
+
+  /* ── Proposal generation handler ── */
+  const handleGenerateProposal = useCallback(async () => {
+    if (!activeConvId || isGeneratingProposal || messages.length === 0) return
+    setIsGeneratingProposal(true)
+    try {
+      const token = await getToken()
+      const result = await generateProposal(activeConvId, token)
+      setProposalData(result)
+      setShowProposalModal(true)
+      addMessage({
+        role: 'assistant',
+        content: `### 📄 Generated Proposal: ${result.conversation_title || 'Project Proposal'}\n\nA complete structured proposal has been generated based on your chat conversation and real-time web research.\n\n*Click the button below or in the header to view the document.*`
+      })
+    } catch (err) {
+      addMessage({
+        role: 'assistant',
+        content: `Proposal generation failed: ${err.message}`
+      })
+    } finally {
+      setIsGeneratingProposal(false)
+    }
+  }, [activeConvId, isGeneratingProposal, messages.length, getToken, addMessage])
 
   /* ── Suggestion chip click — PRESERVED ── */
   const pickSuggestion = useCallback((text) => {
@@ -395,6 +531,19 @@ function ChatPage() {
 
           {/* Right: Actions */}
           <div className="cp-topbar-right">
+            {/* Generate Proposal button */}
+            <button
+              className={`cp-generate-btn${isGeneratingProposal ? ' cp-generate-btn--loading' : ''}`}
+              onClick={handleGenerateProposal}
+              disabled={isEmpty || isGeneratingProposal}
+              title={isEmpty ? "Chat first to generate a proposal" : "Generate structured proposal from this chat"}
+              aria-label="Generate Proposal"
+              type="button"
+            >
+              <FileTextIcon />
+              <span>{isGeneratingProposal ? 'Generating Proposal...' : 'Generate Proposal'}</span>
+            </button>
+
             {/* Message count badge */}
             {!isEmpty && (
               <span className="cp-msg-count" aria-live="polite" aria-label={`${messages.length} messages`}>
@@ -629,6 +778,14 @@ function ChatPage() {
           </p>
         </div>
       </div>
+
+      {/* ── PROPOSAL MODAL OVERLAY ── */}
+      {showProposalModal && proposalData && (
+        <ProposalModal
+          data={proposalData}
+          onClose={() => setShowProposalModal(false)}
+        />
+      )}
 
     </div>
   )
