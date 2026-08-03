@@ -26,8 +26,14 @@ router = APIRouter(
 )
 
 
+from typing import Optional
+
 class GenerateProposalRequest(BaseModel):
     conversation_id: str
+    writing_tone: Optional[str] = None
+    agency_name: Optional[str] = None
+    portfolio_url: Optional[str] = None
+
 
 
 @router.post("/proposal")

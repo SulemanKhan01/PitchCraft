@@ -74,20 +74,32 @@ export async function sendChatMessage(
   history = [],
   token,
   previous_interaction_id = null,
-  conversation_id = null          // ← NEW: pass this to enable DB saving
+  conversation_id = null,
+  options = {}
 ) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...authHeader(token)
+  }
+  if (options.tavilyApiKey) {
+    headers['X-Tavily-Key'] = options.tavilyApiKey
+  }
+  if (options.aiModel) {
+    headers['X-AI-Model'] = options.aiModel
+  }
+
   const res = await fetch(`${API_BASE}/api/chat/chat`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeader(token)
-    },
+    headers,
     body: JSON.stringify({
       question,
       history,
-      debug: false,
+      debug: !!options.debugMode,
       previous_interaction_id,
-      conversation_id              // ← NEW: included in every chat request
+      conversation_id,
+      score_threshold: options.scoreThreshold,
+      max_chunks: options.maxChunks,
+      web_search: options.webSearchEnabled !== false
     })
   })
 
@@ -103,11 +115,6 @@ export async function sendChatMessage(
    — manage chat sessions in the database
 ══════════════════════════════════════════ */
 
-/**
- * Create a new conversation session.
- * Call this once when the user opens the chat page.
- * Returns { id, title, created_at, updated_at }
- */
 export async function createConversation(token) {
   const res = await fetch(`${API_BASE}/api/conversations/`, {
     method: 'POST',
@@ -125,10 +132,6 @@ export async function createConversation(token) {
   return res.json()
 }
 
-/**
- * List all conversations for the current user (for sidebar).
- * Returns array of { id, title, created_at, updated_at }
- */
 export async function listConversations(token) {
   const res = await fetch(`${API_BASE}/api/conversations/`, {
     method: 'GET',
@@ -142,10 +145,6 @@ export async function listConversations(token) {
   return res.json()
 }
 
-/**
- * Load a specific conversation with all its messages.
- * Returns { id, title, messages: [{ role, content, timestamp }] }
- */
 export async function getConversation(conversationId, token) {
   const res = await fetch(`${API_BASE}/api/conversations/${conversationId}`, {
     method: 'GET',
@@ -159,9 +158,6 @@ export async function getConversation(conversationId, token) {
   return res.json()
 }
 
-/**
- * Delete a conversation and all its messages.
- */
 export async function deleteConversation(conversationId, token) {
   const res = await fetch(`${API_BASE}/api/conversations/${conversationId}`, {
     method: 'DELETE',
@@ -178,18 +174,22 @@ export async function deleteConversation(conversationId, token) {
    PROPOSAL GENERATION
 ══════════════════════════════════════════ */
 
-/**
- * Generate a proposal by analyzing the full conversation from the DB.
- * Returns { proposal_content, requirements, web_search_used, message_count }
- */
-export async function generateProposal(conversationId, token) {
+export async function generateProposal(conversationId, token, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...authHeader(token)
+  }
+  if (options.aiModel) headers['X-AI-Model'] = options.aiModel
+
   const res = await fetch(`${API_BASE}/api/generate/proposal`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeader(token)
-    },
-    body: JSON.stringify({ conversation_id: conversationId })
+    headers,
+    body: JSON.stringify({
+      conversation_id: conversationId,
+      writing_tone: options.writingTone,
+      agency_name: options.agencyName,
+      portfolio_url: options.portfolioUrl
+    })
   })
 
   if (!res.ok) {
@@ -203,14 +203,23 @@ export async function generateProposal(conversationId, token) {
    COVER LETTER
 ══════════════════════════════════════════ */
 
-export async function generateCoverLetter(jdText, token) {
+export async function generateCoverLetter(jdText, token, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...authHeader(token)
+  }
+  if (options.aiModel) headers['X-AI-Model'] = options.aiModel
+
   const res = await fetch(`${API_BASE}/api/generate/cover-letter`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeader(token)
-    },
-    body: JSON.stringify({ jd_text: jdText })
+    headers,
+    body: JSON.stringify({
+      jd_text: jdText,
+      writing_tone: options.writingTone,
+      agency_name: options.agencyName,
+      portfolio_url: options.portfolioUrl,
+      signature_text: options.signatureText
+    })
   })
 
   if (!res.ok) {
@@ -220,16 +229,20 @@ export async function generateCoverLetter(jdText, token) {
   return res.json()
 }
 
-export async function downloadCoverLetterPDF(text, token) {
+export async function downloadCoverLetterPDF(text, token, options = {}) {
   const res = await fetch(`${API_BASE}/api/generate/cover-letter/pdf`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...authHeader(token)
     },
-    body: JSON.stringify({ text })
+    body: JSON.stringify({
+      text,
+      pdf_template: options.pdfTemplate || 'minimalist'
+    })
   })
 
   if (!res.ok) throw new Error('PDF download failed')
   return res.blob()
 }
+

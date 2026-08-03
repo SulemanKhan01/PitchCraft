@@ -20,8 +20,14 @@ router = APIRouter(
     tags=["Generate"]
 )
 
+from typing import Optional
+
 class GenerateRequest(BaseModel):
     jd_text: str
+    writing_tone: Optional[str] = None
+    agency_name: Optional[str] = None
+    portfolio_url: Optional[str] = None
+    signature_text: Optional[str] = None
 
 
 
@@ -32,6 +38,7 @@ class GenerateResponse(BaseModel):
 
 class PDFRequest(BaseModel):
     text: str
+    pdf_template: Optional[str] = None
 
 
 
