@@ -13,6 +13,7 @@ import { useRef, useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@clerk/clerk-react'
 import { sendChatMessage, createConversation, generateProposal } from '../services/api'
 import useChatStore from '../stores/useChatStore'
+import useSettingsStore from '../stores/useSettingsStore'
 import './ChatPage.css'
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -328,6 +329,7 @@ function ChatPage() {
   const [showProposalModal, setShowProposalModal] = useState(false)
 
   const { getToken } = useAuth()
+  const settings = useSettingsStore()
 
   /* ── Session init: Create DB conversation session on mount ── */
   useEffect(() => {
@@ -347,10 +349,12 @@ function ChatPage() {
     initSession()
   }, [getToken])
 
-  /* ── Auto-scroll: follows new messages — PRESERVED ── */
+  /* ── Auto-scroll: follows new messages (respects autoScroll setting) ── */
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (settings.autoScroll !== false) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, settings.autoScroll])
 
   /* ── Scroll FAB visibility — shows when user scrolls up ── */
   const handleViewportScroll = useCallback(() => {
@@ -392,7 +396,7 @@ function ChatPage() {
     }
   }, [input]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── Send message — API contract UNCHANGED + DB auto-save enabled ── */
+  /* ── Send message — API contract UNCHANGED + DB auto-save + settings applied ── */
   async function handleSend() {
     const { messages: cur, isLoading: busy } = useChatStore.getState()
     const q = input.trim()
@@ -408,7 +412,17 @@ function ChatPage() {
     try {
       const history = [...cur, userMsg].map(m => ({ role: m.role, content: m.content }))
       const token = await getToken()
-      const result = await sendChatMessage(q, history, token, interactionId, activeConvId)
+      const result = await sendChatMessage(
+        q, history, token, interactionId, activeConvId,
+        {
+          debugMode: settings.debugMode,
+          aiModel: settings.aiModel,
+          scoreThreshold: settings.scoreThreshold,
+          maxChunks: settings.maxChunks,
+          webSearchEnabled: settings.webSearchEnabled,
+          tavilyApiKey: settings.tavilyApiKey
+        }
+      )
       if (result.interaction_id) {
         setInteractionId(result.interaction_id)
       }
@@ -427,7 +441,12 @@ function ChatPage() {
     setIsGeneratingProposal(true)
     try {
       const token = await getToken()
-      const result = await generateProposal(activeConvId, token)
+      const result = await generateProposal(activeConvId, token, {
+        aiModel: settings.aiModel,
+        writingTone: settings.writingTone,
+        agencyName: settings.agencyName,
+        portfolioUrl: settings.portfolioUrl
+      })
       setProposalData(result)
       setShowProposalModal(true)
       addMessage({
@@ -442,7 +461,8 @@ function ChatPage() {
     } finally {
       setIsGeneratingProposal(false)
     }
-  }, [activeConvId, isGeneratingProposal, messages.length, getToken, addMessage])
+  }, [activeConvId, isGeneratingProposal, messages.length, getToken, addMessage, settings])
+
 
   /* ── Suggestion chip click — PRESERVED ── */
   const pickSuggestion = useCallback((text) => {

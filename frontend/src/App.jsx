@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import ChatPage from './pages/ChatPage'
 import UploadPage from './pages/UploadPage'
 import CoverLetterPage from './pages/CoverLetterPage'
+import SettingsPage from './pages/SettingsPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -25,6 +26,9 @@ function App() {
           } />
           <Route path="/cover-letter" element={
             <ProtectedRoute><CoverLetterPage /></ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute><SettingsPage /></ProtectedRoute>
           } />
           <Route path="/" element={<Navigate to="/chat" replace />} />
           <Route path="*" element={<Navigate to="/chat" replace />} />

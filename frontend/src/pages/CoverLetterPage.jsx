@@ -20,6 +20,7 @@
 import { generateCoverLetter, downloadCoverLetterPDF } from '../services/api'
 import { useAuth } from '@clerk/clerk-react'
 import useCoverLetterStore from '../stores/useCoverLetterStore'
+import useSettingsStore from '../stores/useSettingsStore'
 import './Pages.css'
 
 function CoverLetterPage() {
@@ -36,6 +37,7 @@ function CoverLetterPage() {
   const setChunksUsed = useCoverLetterStore((s) => s.setChunksUsed)
   const setError = useCoverLetterStore((s) => s.setError)
   const { getToken } = useAuth()
+  const settings = useSettingsStore()
 
   /* API CALL: Generate cover letter content from JD */
   async function handleGenerate() {
@@ -47,8 +49,18 @@ function CoverLetterPage() {
 
     try {
       const token = await getToken()
-      const result = await generateCoverLetter(jdText, token)
-      setGeneratedContent(result.generated_content)
+      const result = await generateCoverLetter(jdText, token, {
+        aiModel: settings.aiModel,
+        writingTone: settings.writingTone,
+        agencyName: settings.agencyName,
+        portfolioUrl: settings.portfolioUrl,
+        signatureText: settings.signatureText
+      })
+      let content = result.generated_content || ''
+      if (settings.signatureText && !content.includes(settings.signatureText)) {
+        content = `${content}\n\n${settings.signatureText}`
+      }
+      setGeneratedContent(content)
       setChunksUsed(result.num_chunks_used)
     } catch (err) {
       setError(err.message)
@@ -57,32 +69,26 @@ function CoverLetterPage() {
     }
   }
 
-  /* API CALL: Download the generated content as a styled PDF
-     CONCEPT: Blob + ObjectURL + Programmatic download */
+  /* API CALL: Download the generated content as a styled PDF */
   async function handleDownloadPDF() {
     if (!generatedContent) return
 
     setIsDownloading(true)
 
     try {
-      // Step 1: Fetch the PDF as binary data (Blob)
       const token = await getToken()
-      const blob = await downloadCoverLetterPDF(generatedContent, token)
+      const blob = await downloadCoverLetterPDF(generatedContent, token, {
+        pdfTemplate: settings.pdfTemplate
+      })
 
-      // Step 2: Create a temporary URL pointing to this blob in memory
       const url = URL.createObjectURL(blob)
-
-      // Step 3: Create a hidden <a> element
       const link = document.createElement('a')
       link.href = url
-      link.download = 'cover-letter.pdf'  // Suggested filename
+      link.download = `cover-letter-${settings.pdfTemplate || 'styled'}.pdf`
 
-      // Step 4: Add to DOM, click it, remove it
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-
-      // Step 5: Free the memory (the blob is now downloaded, no need for the URL)
       URL.revokeObjectURL(url)
     } catch (err) {
       setError(err.message)

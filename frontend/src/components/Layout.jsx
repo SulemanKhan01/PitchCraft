@@ -1,9 +1,23 @@
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import useSettingsStore from '../stores/useSettingsStore'
 
 function Layout() {
   const [collapsed, setCollapsed] = useState(false)
+  const theme = useSettingsStore((s) => s.theme)
+
+  useEffect(() => {
+    const root = document.documentElement
+    if (theme === 'system') {
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      root.setAttribute('data-theme', systemDark ? 'dark' : 'light')
+      root.classList.toggle('dark', systemDark)
+    } else {
+      root.setAttribute('data-theme', theme)
+      root.classList.toggle('dark', theme === 'dark')
+    }
+  }, [theme])
 
   const handleToggle = useCallback((val) => {
     setCollapsed(val)
@@ -30,3 +44,4 @@ function Layout() {
 }
 
 export default Layout
+

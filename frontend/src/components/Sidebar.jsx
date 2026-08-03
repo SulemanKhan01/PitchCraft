@@ -129,7 +129,7 @@ function Sidebar({ onCollapse }) {
             {!collapsed && <span className="sidebar__link-text">My Documents</span>}
           </button>
 
-          <button className="sidebar__link sidebar__link-btn">
+          <NavLink to="/settings" className={({ isActive }) => `sidebar__link${isActive ? ' sidebar__link--active' : ''}`}>
             <span className="sidebar__link-icon-wrap">
               <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="3" />
@@ -137,7 +137,7 @@ function Sidebar({ onCollapse }) {
               </svg>
             </span>
             {!collapsed && <span className="sidebar__link-text">Settings</span>}
-          </button>
+          </NavLink>
         </div>
 
         {/* Account Section */}

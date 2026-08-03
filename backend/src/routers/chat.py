@@ -49,6 +49,10 @@ class ChatRequest(BaseModel):
     previous_interaction_id: Optional[str] = None
     history: Optional[list[ConversationTurn]] = None
     debug: bool = False
+    score_threshold: Optional[float] = None
+    max_chunks: Optional[int] = None
+    web_search: Optional[bool] = None
+
 
 
 GREETING_WORDS = {
