@@ -22,10 +22,11 @@ from google import genai
 load_dotenv()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# LLM Model Constant
+# LLM Model Constant — sourced from centralized config
 # ─────────────────────────────────────────────────────────────────────────────
 
-GEMINI_FLASH_LITE: str = "gemini-3.1-flash-lite"
+from src.config import GEMINI_MODEL
+GEMINI_FLASH_LITE: str = GEMINI_MODEL  # backward-compatible alias
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Gemini Client — Singleton Factory

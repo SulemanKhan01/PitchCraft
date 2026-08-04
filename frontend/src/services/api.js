@@ -199,6 +199,28 @@ export async function generateProposal(conversationId, token, options = {}) {
   return res.json()
 }
 
+/**
+ * Download official AB {Ark} .docx proposal document.
+ */
+export async function downloadProposalDocx(conversationId, token) {
+  const res = await fetch(`${API_BASE}/api/generate/proposal/docx`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ conversation_id: conversationId })
+  })
+
+  if (!res.ok) {
+    throw new Error('Failed to download DOCX proposal')
+  }
+
+  const blob = await res.blob()
+  return blob
+}
+
+
 /* ══════════════════════════════════════════
    COVER LETTER
 ══════════════════════════════════════════ */

@@ -11,7 +11,10 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@clerk/clerk-react'
-import { sendChatMessage, createConversation, generateProposal } from '../services/api'
+import { sendChatMessage, createConversation, generateProposal, downloadProposalDocx } from '../services/api'
+import ReactMarkdown from 'react-markdown'
+
+
 import useChatStore from '../stores/useChatStore'
 import useSettingsStore from '../stores/useSettingsStore'
 import './ChatPage.css'
@@ -121,8 +124,10 @@ const CloseIcon = () => (
    PROPOSAL MODAL COMPONENT
 ───────────────────────────────────────────────────────────────────────────── */
 
-function ProposalModal({ data, onClose }) {
+function ProposalModal({ data, onClose, conversationId }) {
   const [copied, setCopied] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const { getToken } = useAuth()
 
   const handleCopy = useCallback(() => {
     if (!data?.proposal_content) return
@@ -142,6 +147,26 @@ function ProposalModal({ data, onClose }) {
     a.click()
     URL.revokeObjectURL(url)
   }, [data])
+
+  const handleDownloadDocx = useCallback(async () => {
+    if (!conversationId) return
+    try {
+      setIsDownloading(true)
+      const token = await getToken()
+      const blob = await downloadProposalDocx(conversationId, token)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `AB_Ark_Proposal_${(data?.conversation_title || 'Proposal').replace(/[^a-z0-9]/gi, '_')}.docx`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Failed to download DOCX:', err)
+      alert('Could not download Word document. Please try again.')
+    } finally {
+      setIsDownloading(false)
+    }
+  }, [conversationId, getToken, data])
 
   if (!data) return null
 
@@ -172,8 +197,9 @@ function ProposalModal({ data, onClose }) {
           )}
 
           <div className="cp-proposal-content-text">
-            {data.proposal_content}
+            <ReactMarkdown>{data.proposal_content}</ReactMarkdown>
           </div>
+
         </div>
 
         <footer className="cp-modal-footer">
@@ -181,15 +207,20 @@ function ProposalModal({ data, onClose }) {
             <ExportIcon />
             <span>Download .MD</span>
           </button>
-          <button className={`cp-btn-primary${copied ? ' cp-btn--copied' : ''}`} onClick={handleCopy} type="button">
+          <button className="cp-btn-primary" onClick={handleDownloadDocx} disabled={isDownloading} type="button">
+            <ExportIcon />
+            <span>{isDownloading ? 'Generating Word DOCX...' : 'Download Word (.DOCX)'}</span>
+          </button>
+          <button className={`cp-btn-secondary${copied ? ' cp-btn--copied' : ''}`} onClick={handleCopy} type="button">
             <CopyIcon />
-            <span>{copied ? 'Copied!' : 'Copy Proposal'}</span>
+            <span>{copied ? 'Copied!' : 'Copy Text'}</span>
           </button>
         </footer>
       </div>
     </div>
   )
 }
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SUGGESTION CHIPS — unchanged from original, just referenced below
@@ -673,7 +704,8 @@ function ChatPage() {
                 <div className="cp-bubble-wrap">
                   <div className="cp-bubble">
                     {/* Content */}
-                    <p className="cp-bubble-text">{msg.content}</p>
+                    <div className="cp-bubble-text"><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+
 
                     {/* Timestamp */}
                     <time className="cp-bubble-time" dateTime={new Date().toISOString()} aria-label="Sent now">
@@ -803,11 +835,14 @@ function ChatPage() {
       {showProposalModal && proposalData && (
         <ProposalModal
           data={proposalData}
+          conversationId={activeConvId}
           onClose={() => setShowProposalModal(false)}
         />
       )}
 
+
     </div>
+
   )
 }
 

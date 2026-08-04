@@ -10,6 +10,7 @@ from google import genai
 from src.retrieval.retriever import retrieve_chunks
 from src.services.web_search import search_web, format_web_results_as_context
 from src.services.query_betterment import QueryBettermentPipeline
+from src.config import GEMINI_MODEL
 from .state import ChatAgentState
 
 load_dotenv()
@@ -120,7 +121,7 @@ def generate_answer_node(state: ChatAgentState) -> Dict[str, Any]:
         Answer:"""
 
     # Call Gemini Interaction API
-    kwargs = {"model": "gemini-3.1-flash-lite", "input": prompt}
+    kwargs = {"model": GEMINI_MODEL, "input": prompt}
     if prev_id and prev_id.strip():
         kwargs["previous_interaction_id"] = prev_id.strip()
 
