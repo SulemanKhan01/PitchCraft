@@ -32,7 +32,9 @@ if not logger.handlers:
     logger.addHandler(_h)
     logger.propagate = False
 
-_GEMINI_MODEL = "gemini-3.1-flash-lite"
+from src.config import GEMINI_MODEL
+
+_GEMINI_MODEL = GEMINI_MODEL
 
 _PROMPT = """\
 You are an expert business analyst. Read the conversation below between a user \

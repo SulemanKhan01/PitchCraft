@@ -2,6 +2,7 @@ import os
 import json
 from google import genai
 from dotenv import load_dotenv
+from src.config import GEMINI_MODEL
 
 load_dotenv()
 
@@ -56,7 +57,7 @@ def categorize_proposal(pdf_name: str , text: str):
     Category:"""
 
     response = client.models.generate_content(
-        model="gemini-3.1-flash-lite",
+        model=GEMINI_MODEL,
         contents=prompt,
     )
     category = response.text.strip()
