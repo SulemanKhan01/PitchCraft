@@ -83,7 +83,10 @@ def generate_answer_node(state: ChatAgentState) -> Dict[str, Any]:
     # Construct Prompt & Determine Source
     if chunks:
         source = "rag"
-        context_str = "\n\n".join([f"[From: {c['document_name']}]\n{c['text']}" for c in chunks])
+        context_str = "\n\n".join([
+        f"[From: {c.get('document_name', 'Doc')} | Collection: {c.get('collection', 'KB')}]\n{c['text']}"
+        for c in chunks
+        ])        
         prompt = f"""You are an expert Enterprise AI Assistant. Use the provided context as primary source of truth.
         Instructions:
         - If context answers question, answer from it. Supplement with reliable knowledge if incomplete.

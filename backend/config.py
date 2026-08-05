@@ -11,6 +11,8 @@ QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", None)
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "pitchcraft_cover_letter_kb")
 PROPOSAL_KB_COLLECTION = os.getenv("PROPOSAL_KB_COLLECTION", "pitchcraft_proposals_kb")
 
+TARGET_COLLECTIONS = [COLLECTION_NAME , PROPOSAL_KB_COLLECTION]
+
 # --- Embedding Settings ---
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "gemini-embedding-2")
 EMBEDDING_DIMENSION = 768  # Matches all-MiniLM-L6-v2 output; update if model changes
