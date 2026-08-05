@@ -268,3 +268,17 @@ export async function downloadCoverLetterPDF(text, token, options = {}) {
   return res.blob()
 }
 
+export async function downloadCoverLetterDocx(text, token) {
+  const res = await fetch(`${API_BASE}/api/generate/cover-letter/docx`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ text })
+  })
+
+  if (!res.ok) throw new Error('DOCX download failed')
+  return res.blob()
+}
+
