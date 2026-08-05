@@ -17,7 +17,7 @@
    6. URL.revokeObjectURL(url) cleans up the temporary URL (frees memory)
    ============================================ */
 
-import { generateCoverLetter, downloadCoverLetterPDF } from '../services/api'
+import { generateCoverLetter, downloadCoverLetterPDF, downloadCoverLetterDocx } from '../services/api'
 import { useAuth } from '@clerk/clerk-react'
 import useCoverLetterStore from '../stores/useCoverLetterStore'
 import useSettingsStore from '../stores/useSettingsStore'
@@ -28,12 +28,14 @@ function CoverLetterPage() {
   const generatedContent = useCoverLetterStore((s) => s.generatedContent)
   const isGenerating = useCoverLetterStore((s) => s.isGenerating)
   const isDownloading = useCoverLetterStore((s) => s.isDownloading)
+  const isDownloadingDocx = useCoverLetterStore((s) => s.isDownloadingDocx)
   const chunksUsed = useCoverLetterStore((s) => s.chunksUsed)
   const error = useCoverLetterStore((s) => s.error)
   const setJdText = useCoverLetterStore((s) => s.setJdText)
   const setGeneratedContent = useCoverLetterStore((s) => s.setGeneratedContent)
   const setIsGenerating = useCoverLetterStore((s) => s.setIsGenerating)
   const setIsDownloading = useCoverLetterStore((s) => s.setIsDownloading)
+  const setIsDownloadingDocx = useCoverLetterStore((s) => s.setIsDownloadingDocx)
   const setChunksUsed = useCoverLetterStore((s) => s.setChunksUsed)
   const setError = useCoverLetterStore((s) => s.setError)
   const { getToken } = useAuth()
@@ -57,9 +59,11 @@ function CoverLetterPage() {
         signatureText: settings.signatureText
       })
       let content = result.generated_content || ''
+      
       if (settings.signatureText && !content.includes(settings.signatureText)) {
         content = `${content}\n\n${settings.signatureText}`
       }
+      
       setGeneratedContent(content)
       setChunksUsed(result.num_chunks_used)
     } catch (err) {
@@ -94,6 +98,32 @@ function CoverLetterPage() {
       setError(err.message)
     } finally {
       setIsDownloading(false)
+    }
+  }
+
+  /* API CALL: Download the generated content as a .docx file */
+  async function handleDownloadDOCX() {
+    if (!generatedContent) return
+
+    setIsDownloadingDocx(true)
+
+    try {
+      const token = await getToken()
+      const blob = await downloadCoverLetterDocx(generatedContent, token)
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'cover-letter.docx'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsDownloadingDocx(false)
     }
   }
 
@@ -149,6 +179,23 @@ function CoverLetterPage() {
             )}
           </button>
         )}
+
+        {generatedContent && (
+          <button
+            className="cl-btn cl-btn-secondary"
+            onClick={handleDownloadDOCX}
+            disabled={isDownloadingDocx}
+          >
+            {isDownloadingDocx ? (
+              <>
+                <span className="spinner"></span>
+                Downloading...
+              </>
+            ) : (
+              '📥 Download DOCX'
+            )}
+          </button>
+        )}
       </div>
 
       {/* ERROR */}
@@ -163,10 +210,12 @@ function CoverLetterPage() {
         <div className="cl-output">
           <div className="cl-output-header">
             <h3>Generated Cover Letter</h3>
+            <div className="cl-output-meta">
+              <span className="cl-section-count">Based on {chunksUsed} relevant proposal chunks</span>
+            </div>
           </div>
-          <div className="cl-output-text">{generatedContent}</div>
-          <div className="cl-output-stats">
-            Based on {chunksUsed} relevant proposal chunks
+          <div className="cl-output-content">
+            <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit' }}>{generatedContent}</pre>
           </div>
         </div>
       )}

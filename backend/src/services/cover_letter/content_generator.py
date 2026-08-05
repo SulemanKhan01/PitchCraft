@@ -21,40 +21,43 @@ if not logger.handlers:
 _PROMPT_TEMPLATE = """\
 You are an expert freelance proposal writer with 10+ years of experience winning clients on Upwork and similar platforms.
 
-Your job is to write persuasive cover letter CONTENT (not a formatted letter) based on:
-1. The client's Job Description (what they need)
-2. Past proposal excerpts from our portfolio (proof of our experience)
+Your job is to write a persuasive cover letter based on the client's Job Description and our relevant portfolio excerpts.
 
-The content should:
-- Sound confident, specific, and human — NOT generic or robotic
-- Directly address the client's pain points and required skills
-- Reference similar past work as proof (use the portfolio excerpts as evidence)
-- NOT use filler phrases like "I hope this message finds you well" or "I am writing to express my interest"
-- NOT make up any experience — only use what is in the portfolio excerpts
-
-─────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────
 CLIENT'S JOB DESCRIPTION SUMMARY:
-─────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────
 Project Title    : {project_title}
 Industry/Domain  : {industry_domain}
 Required Skills  : {required_skills}
 Scope of Work    : {scope_of_work}
 Client Pain Points: {pain_points}
 
-─────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────
 OUR RELEVANT PAST WORK (Portfolio Excerpts from Vector DB):
-─────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────
 {portfolio_context}
 
-─────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────
 INSTRUCTIONS:
-─────────────────────────────────────────────────────────────────────────────
-Write 5–6 paragraphs of raw cover letter content:
-1. Opening paragraph  — Hook the client. Show we understand their exact problem.
-2. Middle paragraphs  — Show proof. Connect our past experience (from portfolio excerpts above) to their needs.
-3. Closing paragraph  — Strong call to action. Invite them to a call or next step.
+────────────────────────────────────────────────────────────────────────────
+Write exactly 4 sections without any headings or section labels. Each section should be self-contained:
 
-Write ONLY the paragraphs. No subject line, no greeting, no sign-off. Just the body content.
+1. Start with a compelling opening that grabs attention. Highlight why you're excited about this specific opportunity. Reference the client's exact problem and demonstrate deep understanding. (strict 1-paragraphs)
+
+2. Detail your proven methodology and technical expertise. Explain how you would tackle their specific requirements. Include relevant past project experience and outcomes. (2-3 paragraphs)
+
+3. Include the following links exactly as provided below:
+   • Seraphyx / AB Ark relevant AI engineering: AB Ark AI Engineers  
+   • GreyMind: GreyMind official website  
+   • Spot AI: Spot AI official website  
+   If Qdrant data is poor, use this section to provide your manually written links as requested. (1 paragraph)
+
+4. Ask thoughtful, strategic questions about their technical approach and project execution. Format the questions as bullet points. Include all four questions from the example:
+   • Is Textract currently producing layout-preserved output, or is the existing pipeline feeding mostly raw OCR text to Claude?
+   • Which document fields are business-critical enough to require deterministic validation/retry versus accepting partial extraction?
+   • Do you already have a golden evaluation set and baseline for extraction accuracy, token cost, and Bedrock prompt-cache hit rate?
+
+WRITE ONLY the content. No section headers, no extra commentary, no introductions, no conclusions. Just the raw cover letter content.
 """
 
 
@@ -99,11 +102,11 @@ def generate_content(parsed_jd:JDParsedResult , chunks):
 if __name__ == "__main__":
     # Fake parsed JD (simulating Step 1 output)
     test_jd = JDParsedResult(
-        project_title    = "Automation Engineer (n8n/Make/Zoho)",
-        required_skills  = ["n8n", "Make.com", "Zoho CRM", "REST APIs", "Brevo"],
-        scope_of_work    = ["Maintain automation pipelines", "Build CRM sync", "Complete reconciliation bridges"],
-        industry_domain  = "Aviation / Hospitality",
-        pain_points      = ["Unfinished automation backlog", "Manual data processing", "Accounting not live yet"],
+        project_title    = "Senior AI Engineer - Production LLM Systems",
+        required_skills  = ["Python", "FastAPI", "Qdrant", "PostgreSQL", "Async", "Textract", "Claude", "Bedrock"],
+        scope_of_work    = ["Build production extraction pipelines", "Develop OCR/layout processing systems", "Implement database transactions with retry mechanisms", "Design LLM integration with Claude on AWS Bedrock", "Optimize token costs and prompt caching strategies"],
+        industry_domain  = "AI/Machine Learning",
+        pain_points      = ["OCR/layout processing pipeline development", "Structured validation under real SaaS workloads", "Production extraction pipeline reliability"],
         confidence       = 0.95,
     )
     # Fake chunks (simulating Step 2 output — in real use, these come from Qdrant)
@@ -120,5 +123,5 @@ if __name__ == "__main__":
         },
     ]
     result = generate_content(test_jd, test_chunks)
-    print("\n===== GENERATED CONTENT =====\n")
+    print("\n===== GENERATED COVER LETTER CONTENT (NO HEADINGS) =====\n")
     print(result)

@@ -5,6 +5,7 @@ const useCoverLetterStore = create((set) => ({
   generatedContent: '',
   isGenerating: false,
   isDownloading: false,
+  isDownloadingDocx: false,
   chunksUsed: 0,
   error: null,
 
@@ -16,6 +17,8 @@ const useCoverLetterStore = create((set) => ({
 
   setIsDownloading: (isDownloading) => set({ isDownloading }),
 
+  setIsDownloadingDocx: (isDownloadingDocx) => set({ isDownloadingDocx }),
+
   setChunksUsed: (chunksUsed) => set({ chunksUsed }),
 
   setError: (error) => set({ error }),
@@ -26,6 +29,7 @@ const useCoverLetterStore = create((set) => ({
       generatedContent: '',
       isGenerating: false,
       isDownloading: false,
+      isDownloadingDocx: false,
       chunksUsed: 0,
       error: null,
     }),

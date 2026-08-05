@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from src.services.cover_letter.pipeline import generate_cover_letter_content
 from src.services.cover_letter.pdf_generator import generate_minimal_pdf
+from src.services.cover_letter.docx_generator import generate_minimal_docx
 
 
 # for authentication
@@ -76,3 +77,19 @@ async def download_pdf(request: PDFRequest, current_user: dict = Depends(get_cur
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+
+
+@router.post("/cover-letter/docx")
+async def download_docx(request: PDFRequest, current_user: dict = Depends(get_current_user_clerk)):
+    if not request.text or not request.text.strip():
+        raise HTTPException(status_code=400, detail="text cannot be empty.")
+
+    try:
+        docx_bytes = generate_minimal_docx(request.text)
+        return StreamingResponse(
+            io.BytesIO(docx_bytes),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": "attachment; filename=cover_letter.docx"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate DOCX: {str(e)}")

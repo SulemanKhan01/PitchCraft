@@ -50,12 +50,13 @@ def retrieve_smart(parsed_jd: JDParsedResult):
     for q in queries:
         try:
             chunks = retrieve_chunks(q)
-            all_chunks.extend(chunks)
+            if chunks:
+                all_chunks.extend(chunks)
+            else:
+                logger.info("No chunks retrieved for query: %s", q)
+        except Exception as exc:
+            logger.warning("Failed to retrieve chunks for query '%s': %s", q, exc)
 
-        except:
-            print("Failed to retreive chunks")
-
-             
     unique_chunks = {}
     for chunk in all_chunks:
         text = chunk.get("text" , "")
@@ -81,6 +82,7 @@ def retrieve_smart(parsed_jd: JDParsedResult):
         len(unique_chunks),
         len(final_chunks)
     )
+    
     return final_chunks
 
         
