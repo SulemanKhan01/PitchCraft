@@ -1,4 +1,3 @@
-from sys import prefix
 from fastapi import APIRouter , UploadFile , File, HTTPException
 import os
 from src.pipeline.pipeline import process_pdf

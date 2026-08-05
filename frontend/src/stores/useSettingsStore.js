@@ -21,7 +21,7 @@ const useSettingsStore = create(
       portfolioUrl: '',
       signatureText: '',
       pdfTemplate: 'minimalist',
-      nd
+
       // ── Appearance ──────────────────────────────────────────────────
       debugMode: false,
       autoScroll: true,
