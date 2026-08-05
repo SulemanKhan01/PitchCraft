@@ -39,7 +39,7 @@ def _get_client():
 def ensure_collection(client=None, collection_name: str = COLLECTION_NAME, vector_dim: int = EMBEDDING_DIMENSION):
     """
     Create the Qdrant collection if it does not exist.
-    Does NOT recreate the collection if it already exists.
+    Recreates the collection if it exists but has a different vector dimension.
     """
     from qdrant_client.models import Distance, VectorParams
 
@@ -49,7 +49,30 @@ def ensure_collection(client=None, collection_name: str = COLLECTION_NAME, vecto
     try:
         existing = [c.name for c in client.get_collections().collections]
         if collection_name in existing:
-            logger.info(f"Collection '{collection_name}' already exists. Skipping creation.")
+            collection_info = client.get_collection(collection_name)
+            vectors = collection_info.config.params.vectors
+            current_dim = None
+            if hasattr(vectors, 'size'):
+                current_dim = vectors.size
+            elif isinstance(vectors, dict):
+                for k, v in vectors.items():
+                    if hasattr(v, 'size'):
+                        current_dim = v.size
+                        break
+
+            if current_dim != vector_dim:
+                logger.warning(
+                    f"Collection '{collection_name}' has dimension {current_dim}, "
+                    f"but expected {vector_dim}. Recreating collection..."
+                )
+                client.delete_collection(collection_name=collection_name)
+                client.create_collection(
+                    collection_name=collection_name,
+                    vectors_config=VectorParams(size=vector_dim, distance=Distance.COSINE),
+                )
+                logger.info(f"Collection '{collection_name}' recreated successfully.")
+            else:
+                logger.info(f"Collection '{collection_name}' already exists with correct dimension. Skipping creation.")
         else:
             logger.info(f"Creating collection '{collection_name}' with dim={vector_dim}...")
             client.create_collection(

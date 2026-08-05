@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from src.retrieval.vector_store import _get_client
+from .vector_store import _get_client
 
 load_dotenv()
 from config import COLLECTION_NAME
@@ -24,6 +24,7 @@ def retrieve_chunks(query:str ):
     query_vector = response.embeddings[0].values
 
     qdrant = _get_client()
+    ensure_collection(qdrant, COLLECTION_NAME)
 
     # search_filter = None
     # if category_filter:
