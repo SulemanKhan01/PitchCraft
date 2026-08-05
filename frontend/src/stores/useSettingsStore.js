@@ -21,9 +21,8 @@ const useSettingsStore = create(
       portfolioUrl: '',
       signatureText: '',
       pdfTemplate: 'minimalist',
-
+      nd
       // ── Appearance ──────────────────────────────────────────────────
-      theme: 'dark',
       debugMode: false,
       autoScroll: true,
 
@@ -42,7 +41,6 @@ const useSettingsStore = create(
         portfolioUrl: '',
         signatureText: '',
         pdfTemplate: 'minimalist',
-        theme: 'dark',
         debugMode: false,
         autoScroll: true,
         tavilyApiKey: '',
