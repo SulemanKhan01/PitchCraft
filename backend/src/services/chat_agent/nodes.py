@@ -47,7 +47,10 @@ def retrieve_context_node(state: ChatAgentState) -> Dict[str, Any]:
     """Node 2: Search Qdrant vector database for relevant proposal chunks."""
     logger.info("[Node 2/4: retrieve_context] Searching Qdrant vector store...")
     try:
-        query_text = state["question"]
+        # Use enriched final_query from Query Betterment if available
+        qb_res = state.get("qb_result")
+        query_text = qb_res.final_query if (qb_res and qb_res.final_query) else state["question"]
+        
         raw_chunks = retrieve_chunks(query_text)
         valid_chunks = [c for c in raw_chunks if c.get("score", 0) >= SCORE_THRESHOLD]
 
@@ -56,6 +59,7 @@ def retrieve_context_node(state: ChatAgentState) -> Dict[str, Any]:
     except Exception as exc:
         logger.error(f"[Node 2/4: retrieve_context] Retrieval failed: {exc}")
         return {"raw_chunks": [], "chunks": [], "error": str(exc)}
+
 
 
 def web_search_fallback_node(state: ChatAgentState) -> Dict[str, Any]:
