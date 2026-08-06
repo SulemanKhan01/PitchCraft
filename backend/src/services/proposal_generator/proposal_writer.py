@@ -14,6 +14,9 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 from src.config import GEMINI_MODEL
 
 load_dotenv()
@@ -175,27 +178,41 @@ def generate_full_markdown_proposal(requirements: dict, web_context: str = "") -
     # Step 1: Get outline list of section titles
     outline_sections = generate_proposal_outline(requirements)
 
-    markdown_sections = []
+    section_results = {}
+    logger.info(f"Generating {len(outline_sections)} sections in parallel (max 5 at a time)...")
 
-    # Step 2: Loop through each section and generate deep technical Markdown
-    for idx, section_title in enumerate(outline_sections, start=1):
-        logger.info(f"[{idx}/{len(outline_sections)}] Generating: '{section_title}'...")
-        sec_md = write_proposal_section(
-            section_title=section_title,
-            requirements=requirements,
-            web_context=web_context
-        )
-        markdown_sections.append(sec_md)
 
-    # Step 3: Combine all sections into one unified Markdown document string
-    full_markdown_content = "\n\n\n".join(markdown_sections)
-    logger.info(f"=== Multi-Section Generation Complete! Total Length: {len(full_markdown_content)} characters ===")
+    with ThreadPoolExecutor(max_workers=5) as executor:
 
+        future_to_idx = {
+            executor.submit(
+                write_proposal_section,
+                section_title=title,
+                requirements=requirements,
+                web_context=web_context
+            ): idx
+            for idx, title in enumerate(outline_sections)
+        }
+
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            title = outline_sections[idx]
+
+            try:
+                sec_md = future.result()
+                section_results[idx] = sec_md
+                logger.info(f"Completed section [{idx+1}/{len(outline_sections)}]: '{title}'")
+            except Exception as exc:
+                logger.error(f"Failed section [{idx+1}]: '{title}' — {exc}")
+                section_results[idx] = f"## {title}\n\nSection specifications pending technical kickoff alignment."
+    # Step 3: Re-assemble sections in exact 0..N-1 order
+    ordered_markdown = [section_results[i] for i in range(len(outline_sections))]
+    full_markdown_content = "\n\n\n".join(ordered_markdown)
+    logger.info(f"=== Parallel Multi-Section Generation Complete! Total Length: {len(full_markdown_content)} characters ===")
     return full_markdown_content
 
-
-# Alias for LangGraph node backward compatibility
 write_proposal = generate_full_markdown_proposal
+
 
 
 
