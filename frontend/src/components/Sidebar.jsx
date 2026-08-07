@@ -1,22 +1,68 @@
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useState, useCallback } from 'react'
-import { useClerk, useUser } from '@clerk/clerk-react'
-// import useAuthStore from '../stores/useAuthStore'  // JWT — replaced by Clerk
+import { NavLink, useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, useCallback, useEffect } from 'react'
+import { useClerk, useUser, useAuth } from '@clerk/clerk-react'
+import { listConversations, createConversation, deleteConversation } from '../services/api'
 import './Sidebar.css'
 
 function Sidebar({ onCollapse }) {
   const [collapsed, setCollapsed] = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [conversations, setConversations] = useState([])
+  const [loadingConvs, setLoadingConvs] = useState(false)
 
-  // const logout = useAuthStore((s) => s.logout)  // JWT — replaced by Clerk
-  // const user = useAuthStore((s) => s.user)       // JWT — replaced by Clerk
   const { signOut } = useClerk()
   const { user } = useUser()
+  const { getToken } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const activeConvId = searchParams.get('id')
 
-  /* Get the first two letters of the email for the avatar */
   const userEmail = user?.primaryEmailAddress?.emailAddress || 'user@example.com'
   const initials = userEmail.slice(0, 2).toUpperCase()
+
+  // ── Fetch Conversations List ──────────────────────────────────────────────
+  const loadConversations = useCallback(async () => {
+    try {
+      setLoadingConvs(true)
+      const token = await getToken()
+      const list = await listConversations(token)
+      setConversations(list || [])
+    } catch (err) {
+      console.error('Failed to load conversations:', err)
+    } finally {
+      setLoadingConvs(false)
+    }
+  }, [getToken])
+
+  useEffect(() => {
+    loadConversations()
+  }, [loadConversations, activeConvId])
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  async function handleNewChat() {
+    try {
+      const token = await getToken()
+      const newConv = await createConversation(token)
+      await loadConversations()
+      navigate(`/chat?id=${newConv.id}`)
+    } catch (err) {
+      console.error('Failed to create conversation:', err)
+    }
+  }
+
+  async function handleDeleteChat(e, convId) {
+    e.stopPropagation()
+    e.preventDefault()
+    try {
+      const token = await getToken()
+      await deleteConversation(convId, token)
+      await loadConversations()
+      if (activeConvId === convId) {
+        navigate('/chat')
+      }
+    } catch (err) {
+      console.error('Failed to delete conversation:', err)
+    }
+  }
 
   function handleLogout() {
     signOut()
@@ -59,11 +105,7 @@ function Sidebar({ onCollapse }) {
           type="button"
         >
           <svg className="sidebar__toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            {collapsed ? (
-              <path d="M9 18l6-6-6-6" />
-            ) : (
-              <path d="M15 18l-6-6 6-6" />
-            )}
+            {collapsed ? <path d="M9 18l6-6-6-6" /> : <path d="M15 18l-6-6 6-6" />}
           </svg>
         </button>
       </div>
@@ -71,15 +113,26 @@ function Sidebar({ onCollapse }) {
       {/* Navigation */}
       <nav className="sidebar__nav">
 
+        {/* New Chat Button */}
+        <button className="sidebar__new-chat-btn" onClick={handleNewChat} type="button">
+          <span className="sidebar__link-icon-wrap">
+            <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </span>
+          {!collapsed && <span>New Chat</span>}
+        </button>
+
         {/* Main Nav */}
         <div className="sidebar__section">
-          <NavLink to="/chat" className={({ isActive }) => `sidebar__link${isActive ? ' sidebar__link--active' : ''}`}>
+          <NavLink to="/chat" className={({ isActive }) => `sidebar__link${isActive && !activeConvId ? ' sidebar__link--active' : ''}`}>
             <span className="sidebar__link-icon-wrap">
               <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
               </svg>
             </span>
-            {!collapsed && <span className="sidebar__link-text">Chat</span>}
+            {!collapsed && <span className="sidebar__link-text">Chat Home</span>}
           </NavLink>
 
           <NavLink to="/upload" className={({ isActive }) => `sidebar__link${isActive ? ' sidebar__link--active' : ''}`}>
@@ -105,30 +158,45 @@ function Sidebar({ onCollapse }) {
           </NavLink>
         </div>
 
+        {/* Recent Chats Section */}
+        {!collapsed && <div className="sidebar__section-label">RECENT CHATS</div>}
+        <div className="sidebar__section sidebar__recent-list">
+          {conversations.map(conv => (
+            <div
+              key={conv.id}
+              className={`sidebar__link sidebar__recent-item${activeConvId === conv.id ? ' sidebar__link--active' : ''}`}
+              onClick={() => navigate(`/chat?id=${conv.id}`)}
+            >
+              <span className="sidebar__link-icon-wrap">
+                <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                </svg>
+              </span>
+              {!collapsed && (
+                <>
+                  <span className="sidebar__link-text" title={conv.title}>
+                    {conv.title || 'New Conversation'}
+                  </span>
+                  <button
+                    className="sidebar__recent-delete"
+                    onClick={(e) => handleDeleteChat(e, conv.id)}
+                    title="Delete Chat"
+                    type="button"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                    </svg>
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
         {/* AI Tools Section */}
-        {!collapsed && <div className="sidebar__section-label">AI TOOLS</div>}
+        {!collapsed && <div className="sidebar__section-label">SETTINGS & ACCOUNT</div>}
         <div className="sidebar__section">
-          <button className="sidebar__link sidebar__link-btn">
-            <span className="sidebar__link-icon-wrap">
-              <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1" />
-                <rect x="14" y="3" width="7" height="7" rx="1" />
-                <rect x="3" y="14" width="7" height="7" rx="1" />
-                <rect x="14" y="14" width="7" height="7" rx="1" />
-              </svg>
-            </span>
-            {!collapsed && <span className="sidebar__link-text">Templates</span>}
-          </button>
-
-          <button className="sidebar__link sidebar__link-btn">
-            <span className="sidebar__link-icon-wrap">
-              <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
-              </svg>
-            </span>
-            {!collapsed && <span className="sidebar__link-text">My Documents</span>}
-          </button>
-
           <NavLink to="/settings" className={({ isActive }) => `sidebar__link${isActive ? ' sidebar__link--active' : ''}`}>
             <span className="sidebar__link-icon-wrap">
               <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -138,30 +206,6 @@ function Sidebar({ onCollapse }) {
             </span>
             {!collapsed && <span className="sidebar__link-text">Settings</span>}
           </NavLink>
-        </div>
-
-        {/* Account Section */}
-        {!collapsed && <div className="sidebar__section-label">ACCOUNT</div>}
-        <div className="sidebar__section">
-          <button className="sidebar__link sidebar__link-btn">
-            <span className="sidebar__link-icon-wrap">
-              <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </span>
-            {!collapsed && <span className="sidebar__link-text">Profile</span>}
-          </button>
-
-          <button className="sidebar__link sidebar__link-btn">
-            <span className="sidebar__link-icon-wrap">
-              <svg className="sidebar__link-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                <line x1="1" y1="10" x2="23" y2="10" />
-              </svg>
-            </span>
-            {!collapsed && <span className="sidebar__link-text">Billing</span>}
-          </button>
 
           <button className="sidebar__link sidebar__link-btn sidebar__link-logout" onClick={handleLogout} type="button">
             <span className="sidebar__link-icon-wrap">
@@ -175,28 +219,6 @@ function Sidebar({ onCollapse }) {
           </button>
         </div>
       </nav>
-
-      {/* Gemini Banner */}
-      {!collapsed && (
-        <div className="sidebar__gemini-banner">
-          <div className="sidebar__gemini-info">
-            <div className="sidebar__gemini-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-            </div>
-            <div>
-              <div className="sidebar__gemini-title">Built with Gemini AI</div>
-              <div className="sidebar__gemini-sub">Smart. Fast. Accurate.</div>
-            </div>
-          </div>
-          <button className="sidebar__gemini-btn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      )}
 
       {/* User Profile Footer */}
       <div className="sidebar__user-footer">

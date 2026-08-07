@@ -11,7 +11,8 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@clerk/clerk-react'
-import { sendChatMessage, createConversation, generateProposal, downloadProposalDocx } from '../services/api'
+import { useSearchParams } from 'react-router-dom'
+import { sendChatMessage, createConversation, getConversation, generateProposal, downloadProposalDocx } from '../services/api'
 import ReactMarkdown from 'react-markdown'
 
 
@@ -342,6 +343,7 @@ function ChatPage() {
   const setInput = useChatStore((s) => s.setInput)
   const setIsLoading = useChatStore((s) => s.setIsLoading)
   const addMessage = useChatStore((s) => s.addMessage)
+  const setMessages = useChatStore((s) => s.setMessages)
   const clearChat = useChatStore((s) => s.clearChat)
 
   /* ── Refs & local UI state ── */
@@ -362,23 +364,35 @@ function ChatPage() {
   const { getToken } = useAuth()
   const settings = useSettingsStore()
 
-  /* ── Session init: Create DB conversation session on mount ── */
+  const [searchParams] = useSearchParams()
+
+  /* ── Session init & conversation switcher ── */
   useEffect(() => {
     async function initSession() {
       try {
         const token = await getToken()
-        if (token) {
+        if (!token) return
+
+        const paramId = searchParams.get('id')
+        if (paramId) {
+          setActiveConvId(paramId)
+          const data = await getConversation(paramId, token)
+          if (data?.messages) {
+            setMessages(data.messages)
+          }
+        } else {
+          clearChat()
           const conv = await createConversation(token)
           if (conv?.id) {
             setActiveConvId(conv.id)
           }
         }
       } catch (err) {
-        console.warn('Auto-create conversation session failed:', err)
+        console.warn('Conversation load/init failed:', err)
       }
     }
     initSession()
-  }, [getToken])
+  }, [getToken, searchParams, setMessages, clearChat])
 
   /* ── Auto-scroll: follows new messages (respects autoScroll setting) ── */
   useEffect(() => {

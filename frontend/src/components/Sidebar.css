@@ -398,3 +398,89 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---- New Chat Button & Recent Items ---- */
+
+.sidebar__new-chat-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.sidebar__new-chat-btn:hover {
+  background: linear-gradient(135deg, #6d28d9, #5b21b6);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.sidebar__recent-item {
+  cursor: pointer;
+  flex-shrink: 0;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar__recent-delete {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 2px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none;
+  transition: color 140ms ease;
+}
+
+.sidebar__recent-item:hover .sidebar__recent-delete {
+  display: flex;
+}
+
+.sidebar__recent-delete:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.sidebar__recent-delete svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---- Dedicated Scrollable Container for Recent Chats ---- */
+.sidebar__recent-list {
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(167, 139, 250, 0.3) transparent;
+}
+
+.sidebar__recent-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar__recent-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.sidebar__recent-list::-webkit-scrollbar-thumb {
+  background: rgba(167, 139, 250, 0.35);
+  border-radius: 4px;
+}
+
+.sidebar__recent-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(167, 139, 250, 0.7);
+}
