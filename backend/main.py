@@ -27,11 +27,17 @@ app = FastAPI(title="PitchCraft API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        # Development
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
+        # Production — server IP (same-origin via Nginx, but kept for safety)
+        "http://3.110.54.201",
+        "https://3.110.54.201",
+        # Add your domain here when ready (Phase 12)
+        # "https://yourdomain.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
