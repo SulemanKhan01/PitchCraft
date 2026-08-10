@@ -7,6 +7,7 @@ Endpoints:
 """
 
 import io
+import re
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -29,6 +30,7 @@ from typing import Optional
 
 class GenerateProposalRequest(BaseModel):
     conversation_id: str
+    proposal_content: Optional[str] = None
     writing_tone: Optional[str] = None
     agency_name: Optional[str] = None
     portfolio_url: Optional[str] = None
@@ -111,11 +113,17 @@ def download_proposal_docx(
 
     messages = [{"role": msg.role, "content": msg.content} for msg in conv.messages]
 
-    # Run LangGraph pipeline to generate multi-section proposal markdown & requirements
-    result = generate_proposal(messages)
 
-    proposal_md = result.get("proposal_content") or ""
-    reqs = result.get("requirements") or {}
+
+    if request.proposal_content:
+        proposal_md = request.proposal_content
+        reqs = {}
+    else:
+        # Run LangGraph pipeline to generate multi-section proposal markdown & requirements
+        result = generate_proposal(messages)
+
+        proposal_md = result.get("proposal_content") or ""
+        reqs = result.get("requirements") or {}
 
     project_title = reqs.get("project_title") or conv.title or "Software Project"
     client_name = reqs.get("client_name") or "Valued Client"
@@ -124,16 +132,30 @@ def download_proposal_docx(
     version = get_default_version()
 
     # Generate DOCX binary stream using master DOCX engine
-    docx_bytes = build_proposal_docx_from_markdown(
-        markdown_content=proposal_md,
-        project_title=project_title,
-        client_name=client_name,
-        proposal_id=doc_id,
-        date_str=date_str,
-        version=version
-    )
+    try:
+        docx_bytes = build_proposal_docx_from_markdown(
+            markdown_content=proposal_md,
+            project_title=project_title,
+            client_name=client_name,
+            proposal_id=doc_id,
+            date_str=date_str,
+            version=version
+        )
+    except Exception as exc:
+        print(f"[DOCX Router Error] Failed to generate DOCX document: {exc}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate Word document: {str(exc)}"
+        )
 
-    clean_filename_title = project_title.replace(" ", "_").replace("/", "_")
+    # Sanitize title to ASCII alphanumeric characters only (max 50 chars) for HTTP headers
+    clean_filename_title = re.sub(r'[^a-zA-Z0-9_-]', '_', project_title)
+    clean_filename_title = re.sub(r'_+', '_', clean_filename_title).strip('_')[:50]
+    if not clean_filename_title:
+        clean_filename_title = "Proposal"
+
     filename = f"AB_Ark_Proposal_{clean_filename_title}.docx"
 
     return StreamingResponse(

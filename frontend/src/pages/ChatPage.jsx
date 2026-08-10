@@ -150,11 +150,11 @@ function ProposalModal({ data, onClose, conversationId }) {
   }, [data])
 
   const handleDownloadDocx = useCallback(async () => {
-    if (!conversationId) return
+    if (!conversationId || !data?.proposal_content) return
     try {
       setIsDownloading(true)
       const token = await getToken()
-      const blob = await downloadProposalDocx(conversationId, token)
+      const blob = await downloadProposalDocx(conversationId, data.proposal_content, token)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

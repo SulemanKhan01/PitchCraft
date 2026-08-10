@@ -204,14 +204,17 @@ export async function generateProposal(conversationId, token, options = {}) {
 /**
  * Download official AB {Ark} .docx proposal document.
  */
-export async function downloadProposalDocx(conversationId, token) {
+export async function downloadProposalDocx(conversationId, proposalContent, token) {
   const res = await fetch(`${API_BASE}/api/generate/proposal/docx`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...authHeader(token)
     },
-    body: JSON.stringify({ conversation_id: conversationId })
+    body: JSON.stringify({
+      conversation_id: conversationId,
+      proposal_content: proposalContent
+    })
   })
 
   if (!res.ok) {
