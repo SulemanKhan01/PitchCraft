@@ -13,7 +13,7 @@ colors:
   text-heading: "#111827"
   text-sidebar: "#d1d5db"
   text-sidebar-active: "#ffffff"
-  border: "#e5e7eb"
+  border: "#e5e7eb"`
   border-focus: "#7c3aed"
   success: "#10b981"
   error: "#ef4444"
