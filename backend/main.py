@@ -27,7 +27,8 @@ app = FastAPI(title="PitchCraft API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        # Development
+        # Development		
+        "https://upwork.management.aipoc.abark.com.pk",
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
