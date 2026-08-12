@@ -38,6 +38,15 @@ def query_betterment_node(state: ChatAgentState) -> Dict[str, Any]:
         )
         logger.info(f"[Node 1/4: query_betterment] Final query: '{qb_res.final_query}'")
         return {"qb_result": qb_res}
+    except ValueError as exc:
+        # Input validation rejected the query (gibberish, injection, empty, etc.)
+        logger.warning(f"[Node 1/4: query_betterment] Input rejected: {exc}")
+        return {
+            "qb_result": None,
+            "answer_text": "Your message doesn't look like a valid question. Please rephrase and try again.",
+            "interaction_id": state.get("previous_interaction_id", ""),
+            "source": "input_validation_rejected",
+        }
     except Exception as exc:
         logger.error(f"[Node 1/4: query_betterment] Failed: {exc}")
         return {"qb_result": None}
@@ -117,15 +126,18 @@ def generate_answer_node(state: ChatAgentState) -> Dict[str, Any]:
         
         Answer:"""
     else:
-        source = "gemini_knowledge"
-        prompt = f"""You are an expert Enterprise AI Assistant. Answer using your own reliable knowledge.
-        Instructions:
-        - Never mention: Knowledge Base, Documents, RAG, Context.
-        
-        User Question:
-        {question}
-        
-        Answer:"""
+        source = "no_context"
+        logger.info("[Node 4/4: generate_answer] No RAG chunks or Web Search context available. Declining to answer.")
+        fallback_answer = "I'm sorry, I couldn't find relevant information in the proposal documents or online to answer your question."
+        return {
+            "answer_text": fallback_answer,
+            "source": source,
+            "interaction_id": prev_id or "",
+            "raw_chunks": state.get("raw_chunks", []),
+            "chunks": chunks,
+            "web_context": web_context,
+            "use_web_search": False,
+        }
 
     # Call Gemini Interaction API
     kwargs = {"model": GEMINI_MODEL, "input": prompt}
@@ -138,11 +150,11 @@ def generate_answer_node(state: ChatAgentState) -> Dict[str, Any]:
         kwargs.pop("previous_interaction_id", None)
         interaction = _client.interactions.create(**kwargs)
 
-    ans_text = interaction.output_text.strip() if hasattr(interaction, "output_text") and interaction.output_text else ""
+    raw_text = interaction.output_text.strip() if hasattr(interaction, "output_text") and interaction.output_text else ""
     logger.info(f"[Node 4/4: generate_answer] Done — Source: '{source}', Interaction ID: '{interaction.id}'")
 
     return {
-        "answer_text": ans_text,
+        "answer_text": raw_text,
         "interaction_id": interaction.id,
         "source": source,
     }

@@ -16,6 +16,8 @@ import re
 import logging
 import unicodedata
 from typing import Final
+from wordfreq import zipf_frequency
+
 
 from pydantic import BaseModel, Field
 
@@ -155,6 +157,50 @@ _HTML_TAG_REMOVE_RE: Final[re.Pattern[str]] = re.compile(
 _SPECIAL_CHAR_SPAM_RE: Final[re.Pattern[str]] = re.compile(
     r"(?<!\w)[@#$%^&*~]{2,}(?!\w)"
 )
+
+
+
+# -- Gibberish detection --
+
+_DOMAIN_WHITELIST: Final[set[str]] = {
+    "pitchcraft", "qdrant", "tavily", "langgraph", "fastapi", "docxtpl",
+    "rag", "llm", "ai", "docx", "pdf", "json", "api", "auth", "clerk"
+}
+
+_CONSONANT_CLUSTER_RE: Final[re.Pattern[str]] = re.compile(
+    r"[bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ]{5,}"
+)
+
+
+def _detect_gibberish(text: str) -> bool:
+    """
+    Detects unreadable keyboard mashes (e.g. 'asdfghjkl', 'qwertyuiop') 
+    while preserving typos and domain terms like 'PitchCraft' or 'Qdrant'.
+    """
+    cleaned = text.strip().lower()
+    words = [w for w in re.findall(r"\b[a-zA-Z]+\b", cleaned)]
+    
+    if not words:
+        return False
+
+    # 1. Hard Pattern Check: 5+ consonants in a row (e.g. 'asdfghjkl')
+    letters_only = re.sub(r"[^a-zA-Z]", "", cleaned)
+    if _CONSONANT_CLUSTER_RE.search(letters_only):
+        return True
+
+    # 2. Check Word Frequency using wordfreq
+    unrecognized_words = 0
+    for word in words:
+        if word in _DOMAIN_WHITELIST or len(word) <= 3:
+            continue
+        
+        if zipf_frequency(word, 'en') == 0.0:
+            unrecognized_words += 1
+
+    if len(words) == 1:
+        return unrecognized_words == 1
+
+    return (unrecognized_words / len(words)) > 0.6
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -402,6 +448,10 @@ def _validate_inner(
             f"Query is shorter than the minimum length of {min_length} "
             f"character(s) after cleaning (got {len(cleaned)})."
         )
+
+    
+    if _detect_gibberish(cleaned):
+        errors.append("Query appears to be unreadable or invalid gibberish.")
 
     # ── Step 11: security / injection warnings (non-blocking) ─────────────────
     flag = _detect_prompt_injection(cleaned)
