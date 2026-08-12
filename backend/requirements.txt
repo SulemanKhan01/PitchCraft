@@ -112,5 +112,13 @@ urllib3==2.7.0
 uuid_utils==0.17.0
 uvicorn==0.51.0
 websockets==15.0.1
+wordfreq==3.1.1
 xxhash==3.8.1
 zstandard==0.25.0
+pywin32==312
+safetensors==0.8.0
+scikit-learn==1.9.0
+scipy==1.18.0
+sentence-transformers==5.6.0
+torch==2.13.0
+transformers==5.13.0

@@ -45,6 +45,8 @@ class PDFRequest(BaseModel):
 
 
 
+from src.services.query_betterment.input_validation import validate
+
 @router.post("/cover-letter" , response_model = GenerateResponse)
 async def generate_cover_letter(request: GenerateRequest, current_user: dict = Depends(get_current_user_clerk)):
     
@@ -52,6 +54,10 @@ async def generate_cover_letter(request: GenerateRequest, current_user: dict = D
     if not request.jd_text or not request.jd_text.strip():
         raise HTTPException(status_code = 400 , detail = "jd_text cannot be empty.")
 
+    val_res = validate(request.jd_text)
+    if not val_res.is_valid:
+        error_msg = val_res.validation_errors[0] if val_res.validation_errors else "Invalid input text."
+        raise HTTPException(status_code = 400, detail = error_msg)
 
     result = generate_cover_letter_content(request.jd_text)
 
