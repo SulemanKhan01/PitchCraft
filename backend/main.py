@@ -17,6 +17,8 @@ from database import engine, Base
 from src.models import user          # existing user model
 from src.models import conversation  # new conversation + message models
 
+
+
 # Create all tables in PostgreSQL (runs once on startup, safe to run multiple times)
 Base.metadata.create_all(bind=engine)
 
@@ -49,8 +51,9 @@ app.add_middleware(
 app.include_router(upload.router)
 app.include_router(chat.router)
 app.include_router(generate_coverletter.router)
-app.include_router(conversations.router)       # ← NEW
-app.include_router(generate_proposal.router)   # ← NEW
+app.include_router(conversations.router)       
+app.include_router(generate_proposal.router) 
+ 
 # app.include_router(auth.router)  # JWT — replaced by Clerk
 
 

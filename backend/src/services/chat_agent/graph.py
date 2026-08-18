@@ -25,17 +25,6 @@ def route_after_retrieval(state: ChatAgentState) -> str:
         return "web_search_fallback"
 
 
-def route_after_query_betterment(state: ChatAgentState) -> str:
-    """
-    Conditional Edge Function:
-    If input validation rejected the query, skip all remaining nodes.
-    Otherwise, continue to retrieval.
-    """
-    if state.get("source") == "input_validation_rejected":
-        return "end"
-    return "retrieve_context"
-
-
 builder = StateGraph(ChatAgentState)
 
 # 1. Add 4 Nodes
@@ -44,20 +33,11 @@ builder.add_node("retrieve_context", retrieve_context_node)
 builder.add_node("web_search_fallback", web_search_fallback_node)
 builder.add_node("generate_answer", generate_answer_node)
 
-# 2. Entry point
+# 2. Add Fixed Edges
 builder.set_entry_point("query_betterment")
+builder.add_edge("query_betterment", "retrieve_context")
 
-# 3. CONDITIONAL EDGE after query_betterment (short-circuit on validation rejection)
-builder.add_conditional_edges(
-    "query_betterment",
-    route_after_query_betterment,
-    {
-        "retrieve_context": "retrieve_context",
-        "end": END,
-    }
-)
-
-# 4. CONDITIONAL EDGE after retrieval
+# 3. Add CONDITIONAL EDGE (Dynamic Router)
 builder.add_conditional_edges(
     "retrieve_context",
     route_after_retrieval,

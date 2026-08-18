@@ -24,7 +24,7 @@ if not logger.handlers:
 
 _client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 _qb_pipeline = QueryBettermentPipeline()
-SCORE_THRESHOLD = 0.60
+SCORE_THRESHOLD = 0.75
 
 
 def query_betterment_node(state: ChatAgentState) -> Dict[str, Any]:
@@ -38,15 +38,6 @@ def query_betterment_node(state: ChatAgentState) -> Dict[str, Any]:
         )
         logger.info(f"[Node 1/4: query_betterment] Final query: '{qb_res.final_query}'")
         return {"qb_result": qb_res}
-    except ValueError as exc:
-        # Input validation rejected the query (gibberish, injection, empty, etc.)
-        logger.warning(f"[Node 1/4: query_betterment] Input rejected: {exc}")
-        return {
-            "qb_result": None,
-            "answer_text": "Your message doesn't look like a valid question. Please rephrase and try again.",
-            "interaction_id": state.get("previous_interaction_id", ""),
-            "source": "input_validation_rejected",
-        }
     except Exception as exc:
         logger.error(f"[Node 1/4: query_betterment] Failed: {exc}")
         return {"qb_result": None}
