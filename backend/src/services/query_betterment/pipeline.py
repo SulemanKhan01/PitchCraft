@@ -23,7 +23,6 @@ from .models import (
 from .conversation_context import ConversationContext
 from .unified_enricher import UnifiedQueryEnricher
 from .logger import PipelineLogger
-from .input_validation import validate
 
 logger = logging.getLogger("query_betterment.orchestrator")
 if not logger.handlers:
@@ -59,16 +58,7 @@ class QueryBettermentPipeline:
         """
         pipeline_start = time.perf_counter()
         original_query = query.strip()
-
-        # ── Phase -1: Input Validation (gibberish / injection / length) ───────
-        validation = validate(original_query)
-        if not validation.is_valid:
-            errors = "; ".join(validation.validation_errors)
-            logger.warning("[QB] Query rejected by input validation: %s", errors)
-            raise ValueError(f"Invalid query: {errors}")
-
-        # Use the cleaned/normalised query from here on
-        current_query = validation.cleaned_query
+        current_query = original_query
         traces: list[StageTrace] = []
 
         # ── Phase 0: Conversation Context (Only if history exists) ────────────
