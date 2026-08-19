@@ -2,7 +2,7 @@
 generator.py — OpenAI static website code generation service using Structured Output.
 """
 import json
-from openai import OpenAI
+from langfuse.openai import OpenAI
 from src.config import OPENAI_API_KEY, OPENAI_MODEL
 from src.services.website_generator.validator import validate_generated_website
 

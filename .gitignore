@@ -68,3 +68,13 @@ htmlcov/
 ui-ux-pro-max-skill/
 
 ./ui-ux-pro-max-skill/
+
+
+# =====================================================
+# Node Modules
+# =====================================================
+
+node_modules/
+stitch-service/node_modules/
+stitch-service/dist/
+package-lock.json
