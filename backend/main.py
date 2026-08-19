@@ -10,6 +10,8 @@ from src.routers import generate_coverletter
 from src.routers import conversations
 from src.routers import generate_proposal
 
+from src.routers import website_generator
+
 # ── Database setup ────────────────────────────────────────────────────────────
 from database import engine, Base
 
@@ -53,7 +55,7 @@ app.include_router(chat.router)
 app.include_router(generate_coverletter.router)
 app.include_router(conversations.router)       
 app.include_router(generate_proposal.router) 
- 
+app.include_router(website_generator.router) 
 # app.include_router(auth.router)  # JWT — replaced by Clerk
 
 

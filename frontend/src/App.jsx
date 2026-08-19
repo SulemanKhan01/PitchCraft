@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import ChatPage from './pages/ChatPage'
 import UploadPage from './pages/UploadPage'
 import CoverLetterPage from './pages/CoverLetterPage'
+import WebsiteGeneratorPage from './pages/WebsiteGeneratorPage'
 import SettingsPage from './pages/SettingsPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -26,6 +27,9 @@ function App() {
           } />
           <Route path="/cover-letter" element={
             <ProtectedRoute><CoverLetterPage /></ProtectedRoute>
+          } />
+          <Route path="/generate-website" element={
+            <ProtectedRoute><WebsiteGeneratorPage /></ProtectedRoute>
           } />
           <Route path="/settings" element={
             <ProtectedRoute><SettingsPage /></ProtectedRoute>

@@ -287,3 +287,34 @@ export async function downloadCoverLetterDocx(text, token) {
   return res.blob()
 }
 
+/* ══════════════════════════════════════════
+   WEBSITE GENERATOR & DEPLOYMENT
+══════════════════════════════════════════ */
+
+/**
+ * Generates and deploys a demo static website based on job description.
+ * @param {string} jobDescription - Client job description or website brief
+ * @param {string} customInstructions - Optional extra styling/feature instructions
+ * @param {string} token - Clerk authorization token
+ * @returns {Promise<{status: string, public_url: string, site_title: string, site_id: string}>}
+ */
+export async function generateAndDeployWebsite(jobDescription, customInstructions = '', token) {
+  const res = await fetch(`${API_BASE}/api/generate/website`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeader(token)
+    },
+    body: JSON.stringify({
+      job_description: jobDescription,
+      custom_instructions: customInstructions
+    })
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Website generation and deployment failed')
+  }
+
+  return res.json()
+}
