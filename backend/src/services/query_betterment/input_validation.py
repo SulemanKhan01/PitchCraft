@@ -183,10 +183,10 @@ def _detect_gibberish(text: str) -> bool:
     if not words:
         return False
 
-    # 1. Hard Pattern Check: 5+ consonants in a row (e.g. 'asdfghjkl')
-    letters_only = re.sub(r"[^a-zA-Z]", "", cleaned)
-    if _CONSONANT_CLUSTER_RE.search(letters_only):
-        return True
+    # 1. Hard Pattern Check: 5+ consonants in a row in a single word (e.g. 'asdfghjkl')
+    for word in words:
+        if _CONSONANT_CLUSTER_RE.search(word):
+            return True
 
     # 2. Check Word Frequency using wordfreq
     unrecognized_words = 0

@@ -1,3 +1,9 @@
+import sys
+import asyncio
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,6 +17,7 @@ from src.routers import conversations
 from src.routers import generate_proposal
 
 from src.routers import website_generator
+from src.routers import jobs
 
 # ── Database setup ────────────────────────────────────────────────────────────
 from database import engine, Base
@@ -18,11 +25,16 @@ from database import engine, Base
 # Import models so SQLAlchemy registers them before create_all runs
 from src.models import user          # existing user model
 from src.models import conversation  # new conversation + message models
+from src.models import job           # registers Job table with SQLAlchemy
 
 
 
 # Create all tables in PostgreSQL (runs once on startup, safe to run multiple times)
 Base.metadata.create_all(bind=engine)
+
+from src.services.scraper_scheduler import create_scheduler
+_scraper_scheduler = create_scheduler()
+
 
 
 # ── App ───────────────────────────────────────────────────────────────────────
@@ -49,6 +61,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.on_event("startup")
+async def startup_scheduler():
+    _scraper_scheduler.start()
+
+@app.on_event("shutdown")
+async def shutdown_scheduler():
+    _scraper_scheduler.shutdown(wait=False)
+
 # ── Register routers ──────────────────────────────────────────────────────────
 app.include_router(upload.router)
 app.include_router(chat.router)
@@ -56,6 +77,7 @@ app.include_router(generate_coverletter.router)
 app.include_router(conversations.router)       
 app.include_router(generate_proposal.router) 
 app.include_router(website_generator.router) 
+app.include_router(jobs.router)
 # app.include_router(auth.router)  # JWT — replaced by Clerk
 
 

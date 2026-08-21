@@ -4,6 +4,7 @@ import ChatPage from './pages/ChatPage'
 import UploadPage from './pages/UploadPage'
 import CoverLetterPage from './pages/CoverLetterPage'
 import WebsiteGeneratorPage from './pages/WebsiteGeneratorPage'
+import JobsPage from './pages/JobsPage'
 import SettingsPage from './pages/SettingsPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -30,6 +31,9 @@ function App() {
           } />
           <Route path="/generate-website" element={
             <ProtectedRoute><WebsiteGeneratorPage /></ProtectedRoute>
+          } />
+          <Route path="/jobs" element={
+            <ProtectedRoute><JobsPage /></ProtectedRoute>
           } />
           <Route path="/settings" element={
             <ProtectedRoute><SettingsPage /></ProtectedRoute>

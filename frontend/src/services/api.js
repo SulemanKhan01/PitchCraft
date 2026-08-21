@@ -318,3 +318,95 @@ export async function generateAndDeployWebsite(jobDescription, customInstruction
 
   return res.json()
 }
+
+/* ══════════════════════════════════════════
+   UPWORK JOBS MANAGEMENT
+══════════════════════════════════════════ */
+
+/**
+ * Triggers the Upwork scraping pipeline on the backend and saves new jobs to DB.
+ */
+export async function triggerJobScraper(token) {
+  const res = await fetch(`${API_BASE}/api/jobs/scrape`, {
+    method: 'POST',
+    headers: { ...authHeader(token) }
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Scraper failed to run')
+  }
+
+  return res.json()
+}
+
+/**
+ * List all saved jobs for the user from DB.
+ */
+export async function listJobs(token) {
+  const res = await fetch(`${API_BASE}/api/jobs/`, {
+    method: 'GET',
+    headers: { ...authHeader(token) }
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Failed to fetch jobs')
+  }
+
+  return res.json()
+}
+
+/**
+ * Toggle job status between "pending" and "applied".
+ */
+export async function updateJobStatus(jobId, status, token) {
+  const res = await fetch(`${API_BASE}/api/jobs/${jobId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeader(token)
+    },
+    body: JSON.stringify({ status })
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Failed to update job status')
+  }
+
+  return res.json()
+}
+
+/**
+ * Delete a job by ID.
+ */
+export async function deleteJob(jobId, token) {
+  const res = await fetch(`${API_BASE}/api/jobs/${jobId}`, {
+    method: 'DELETE',
+    headers: { ...authHeader(token) }
+  })
+
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Failed to delete job')
+  }
+}
+
+/* ── NEW: Auto-scraper Scheduler Status ───────────────────────────────────── */
+
+/**
+ * Get the APScheduler state: next_scrape_at, last_scraped_at, is_running.
+ * No auth token needed — public status endpoint.
+ */
+export async function getScraperStatus() {
+  const res = await fetch(`${API_BASE}/api/jobs/scraper-status`, {
+    method: 'GET',
+  })
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch scraper status')
+  }
+
+  return res.json()
+}
