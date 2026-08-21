@@ -78,3 +78,84 @@ node_modules/
 stitch-service/node_modules/
 stitch-service/dist/
 package-lock.json
+
+
+# Scraper generated data & outputs
+*.csv
+output/*.csv
+scraped_jobs/
+
+# Browser automation cache & logs
+.camoufox/
+.browser_data/
+geckodriver.log
+
+# Scraper specific env files
+backend/src/services/upwork_scraper/.env
+
+# Browser automation cache & logs
+.camoufox/
+.browser_data/
+geckodriver.log
+**/chromedriver.exe
+**/geckodriver.exe
+.playwright/
+playwright-report/
+test-results/
+
+
+
+
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sensitive and Environment files
+.env/
+.env
+.env.local
+
+# Output data
+backend/src/services/upwork_scraper/execution/data/outputs/
+*.html
+*.png
+
+# Temporary Files
+.tmp/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+notes.txt

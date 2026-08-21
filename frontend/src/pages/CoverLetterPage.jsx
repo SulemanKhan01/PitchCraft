@@ -17,6 +17,8 @@
    6. URL.revokeObjectURL(url) cleans up the temporary URL (frees memory)
    ============================================ */
 
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { generateCoverLetter, downloadCoverLetterPDF, downloadCoverLetterDocx } from '../services/api'
 import { useAuth } from '@clerk/clerk-react'
 import useCoverLetterStore from '../stores/useCoverLetterStore'
@@ -24,6 +26,7 @@ import useSettingsStore from '../stores/useSettingsStore'
 import './Pages.css'
 
 function CoverLetterPage() {
+  const location = useLocation()
   const jdText = useCoverLetterStore((s) => s.jdText)
   const generatedContent = useCoverLetterStore((s) => s.generatedContent)
   const isGenerating = useCoverLetterStore((s) => s.isGenerating)
@@ -40,6 +43,13 @@ function CoverLetterPage() {
   const setError = useCoverLetterStore((s) => s.setError)
   const { getToken } = useAuth()
   const settings = useSettingsStore()
+
+  /* Pre-fill JD text if navigated from Jobs page */
+  useEffect(() => {
+    if (location.state?.initialJdText) {
+      setJdText(location.state.initialJdText)
+    }
+  }, [location.state, setJdText])
 
   /* API CALL: Generate cover letter content from JD */
   async function handleGenerate() {
