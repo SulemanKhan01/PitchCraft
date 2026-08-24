@@ -82,3 +82,6 @@ class Job(Base):
     hourly_min                          = Column(Float,  nullable=True)
     qualifications                      = Column(Text,   nullable=True)
     questions                           = Column(Text,   nullable=True)
+
+    # ── Phase 1: Auto-apply fields ────────────────────────────────────────────
+    cover_letter                        = Column(Text,   nullable=True)  # AI-generated, per-job on-demand
