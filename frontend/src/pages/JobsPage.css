@@ -527,3 +527,30 @@
   letter-spacing: 0.04em;
 }
 
+/* ── Apply Button ─────────────────────────────────────────────────────── */
+.job-card__apply-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(135deg, #14a800, #1ec900);
+  color: #fff;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.job-card__apply-btn:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.job-card__apply-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+

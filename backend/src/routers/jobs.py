@@ -23,7 +23,12 @@ from src.models.job import Job
 from src.services.scraper_scheduler import get_scheduler_state
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+
+# Discord Webhook
 from src.services.discord_notifier import send_job_alert
+
+
+
 
 
 
@@ -44,6 +49,10 @@ _DEFAULT_SEARCH_PARAMS = os.path.join(_EXECUTION_DIR, "data", "inputs", "default
 # Call run_workflow — exactly the same entry point as run_job_search.py
 # This handles: loading upwork_scraper/.env, loading search params, calling upwork_core.main()
 from src.services.upwork_scraper.execution.scrape_upwork import run_workflow as scrape_run_workflow
+
+# Auto Apply on jobs
+from src.services.cover_letter.pipeline import generate_cover_letter_content
+from src.services.upwork_scraper.execution.apply_job import run_apply_workflow
 
 
 def _run_scraper_sync():
@@ -69,6 +78,22 @@ def _run_scraper_sync():
         )
     finally:
         loop.close()
+
+def _run_apply_sync(job_url: str) -> bool:
+    """
+    Run the apply workflow in a dedicated thread with a fresh ProactorEventLoop.
+    Same pattern as _run_scraper_sync to avoid Windows Playwright blocking issues.
+    """
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        return loop.run_until_complete(run_apply_workflow(job_url, headless=True))
+    finally:
+        loop.close()
+
 
 
 router = APIRouter(
@@ -308,4 +333,60 @@ def get_scraper_status():
         "last_scraped_at": state.get("last_scraped_at"),
         "next_scrape_at":  state.get("next_scrape_at"),
         "is_running":      state.get("is_running", False),
+    }
+
+
+
+@router.post("/{job_id}/apply", status_code=status.HTTP_200_OK)
+async def apply_to_job(
+    job_id: str,
+    current_user: dict = Depends(get_current_user_clerk),
+    db: Session = Depends(get_db),
+):
+    """
+    Phase 1: Generate a cover letter for the selected job, then navigate
+    to the job URL and click the Apply button. Script exits after clicking.
+    """
+    user_id = current_user.get("sub", "anonymous")
+
+    # Fetch the job from DB
+    job = db.query(Job).filter(
+        Job.id == job_id,
+        (Job.user_id == user_id) |
+        (Job.user_id == "local-dev-user") |
+        (Job.user_id == "local-fallback-user") |
+        (Job.user_id == "anonymous") |
+        (Job.user_id == "auto-scheduler")
+    ).first()
+
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found.")
+
+    if not job.url:
+        raise HTTPException(status_code=400, detail="Job has no URL to navigate to.")
+
+    if not job.description:
+        raise HTTPException(status_code=400, detail="Job has no description to generate cover letter from.")
+
+    # Step 1: Generate cover letter using existing pipeline
+    try:
+        result = generate_cover_letter_content(job.description)
+        job.cover_letter = result.generated_content
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Cover letter generation failed: {str(e)}")
+
+    # Step 2: Launch browser, login, navigate, click apply button
+    try:
+        success = await asyncio.to_thread(_run_apply_sync, job.url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Browser apply failed: {str(e)}")
+
+    if not success:
+        raise HTTPException(status_code=500, detail="Apply button was not found or could not be clicked.")
+
+    return {
+        "message": "Cover letter generated and apply button clicked successfully.",
+        "job_id": job_id,
+        "cover_letter": job.cover_letter,
     }

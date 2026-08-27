@@ -410,3 +410,22 @@ export async function getScraperStatus() {
 
   return res.json()
 }
+
+
+/**
+ * Trigger cover letter generation and click the Apply button for a specific job.
+ * Phase 1: Generates cover letter, opens browser, navigates to job URL, clicks apply.
+ */
+export async function applyToJob(jobId, token) {
+  const res = await fetch(`${API_BASE}/api/jobs/${jobId}/apply`, {
+    method: 'POST',
+    headers: { ...authHeader(token) }
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail || 'Failed to apply to job')
+  }
+
+  return res.json()
+}

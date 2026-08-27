@@ -519,3 +519,28 @@ async def camoufox_login_flow(username, password, login_url, search_url, credent
         session = await get_requests_session_from_playwright(context, page, proxy_details=proxy_details)
         return job_urls_dict, session
 
+async def click_apply_button(page: Page, context: BrowserContext) -> bool:
+    """
+    Locate and click the primary green action button on an Upwork job page.
+    Handles both 'Apply Now' and 'Buy Connects to apply' button states.
+    Returns True on success, False on failure.
+    """
+    try:
+        apply_btn = page.locator(
+            'button:has-text("Apply Now"), '
+            'button:has-text("Buy Connects to apply"), '
+            'a:has-text("Apply Now"), '
+            'button:has-text("Submit a Proposal")'
+        ).first
+
+        await apply_btn.wait_for(state="visible", timeout=10000)
+        logger.info("✅ Found apply button. Clicking...")
+        await asyncio.sleep(random.uniform(1.2, 2.5))  # Human reaction delay
+        await apply_btn.click()
+        logger.info("✅ Apply button clicked successfully.")
+        return True
+
+    except Exception as e:
+        logger.error(f"⚠️ Failed to click apply button: {e}")
+        return False
+

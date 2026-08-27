@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
 // import { listJobs, triggerJobScraper, updateJobStatus, deleteJob } from '../services/api'  // OLD
-import { listJobs, triggerJobScraper, updateJobStatus, deleteJob, getScraperStatus } from '../services/api'  // NEW — added getScraperStatus
+import { listJobs, triggerJobScraper, updateJobStatus, deleteJob, getScraperStatus, applyToJob } from '../services/api'  // NEW — added getScraperStatus, applyToJob
 import './JobsPage.css'
 
 export default function JobsPage() {
@@ -132,6 +132,29 @@ export default function JobsPage() {
   function handleGenerateCoverLetter(job) {
     // Pass job description to cover letter generator page
     navigate('/cover-letter', { state: { initialJdText: job.description } })
+  }
+
+  // ── Apply to Job (Phase 1) ────────────────────────────────────────────────
+  async function handleApplyToJob(job) {
+    try {
+      setNotice({
+        type: 'info',
+        text: '🤖 Generating cover letter and opening browser to click Apply... This may take 30-60 seconds. Please wait!'
+      })
+      const token = await getToken()
+      const res = await applyToJob(job.id, token)
+      setNotice({
+        type: 'success',
+        text: `✅ ${res.message}`
+      })
+      await loadJobsList()
+    } catch (err) {
+      console.error('Apply error:', err)
+      setNotice({
+        type: 'error',
+        text: err.message || 'Failed to apply to job.'
+      })
+    }
   }
 
   // ── Filtered Jobs ─────────────────────────────────────────────────────────
@@ -395,6 +418,20 @@ export default function JobsPage() {
                         <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                       </svg>
                       Generate Proposal
+                    </button>
+
+                    <button
+                      className="job-card__apply-btn"
+                      onClick={() => handleApplyToJob(job)}
+                      title="Generate cover letter and click Apply on Upwork"
+                      type="button"
+                      disabled={job.status === 'applied'}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="9 11 12 14 22 4"></polyline>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                      </svg>
+                      {job.status === 'applied' ? 'Applied' : 'Apply'}
                     </button>
 
                     <button
