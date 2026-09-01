@@ -13,28 +13,28 @@
      • Stagger animation 30–50ms     (#7)
    ============================================================ */
 
-/* ─── Design tokens ──────────────────────────────────────────── */
+/* ─── Design tokens — Abark.tech Blue ────────────────────────── */
 :root {
-  --al-accent:       #7c3aed;
-  --al-accent-mid:   #9333ea;
-  --al-accent-light: #a78bfa;
-  --al-accent-glow:  rgba(124,58,237,0.35);
-  --al-accent-glass: rgba(124,58,237,0.1);
-  --al-pink:         #c026d3;
+  --al-accent:       #0068B3;
+  --al-accent-mid:   #0079cc;
+  --al-accent-light: #0085E5;
+  --al-accent-glow:  rgba(0,104,179,0.35);
+  --al-accent-glass: rgba(0,104,179,0.10);
+  --al-pink:         #0085E5;
 
-  --al-bg:           #0b0914;
-  --al-surface-1:    rgba(17,14,28,0.92);
-  --al-surface-2:    rgba(26,22,40,0.85);
-  --al-surface-3:    rgba(32,28,48,0.9);
+  --al-bg:           #080d14;
+  --al-surface-1:    rgba(10,18,30,0.95);
+  --al-surface-2:    rgba(13,27,42,0.90);
+  --al-surface-3:    rgba(15,32,50,0.92);
 
-  --al-border:       rgba(255,255,255,0.08);
-  --al-border-focus: rgba(124,58,237,0.55);
+  --al-border:       rgba(255,255,255,0.07);
+  --al-border-focus: rgba(0,133,229,0.50);
 
-  --al-text-head:    #f4f2ff;
-  --al-text-body:    #b0adc0;
-  --al-text-muted:   #5a5675;
+  --al-text-head:    #ffffff;
+  --al-text-body:    rgba(255,255,255,0.60);
+  --al-text-muted:   rgba(255,255,255,0.28);
 
-  --al-radius-card:  28px;
+  --al-radius-card:  24px;
   --al-ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
   --al-ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -81,7 +81,7 @@
   height: 560px;
   top: -180px;
   left: -140px;
-  background: radial-gradient(circle, rgba(124,58,237,0.22) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0,104,179,0.18) 0%, transparent 70%);
   animation: orbDrift1 18s ease-in-out infinite alternate;
 }
 
@@ -90,7 +90,7 @@
   height: 440px;
   bottom: -120px;
   right: -100px;
-  background: radial-gradient(circle, rgba(192,38,211,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0,133,229,0.12) 0%, transparent 70%);
   animation: orbDrift2 22s ease-in-out infinite alternate;
 }
 
@@ -99,7 +99,7 @@
   height: 300px;
   top: 40%;
   left: 40%;
-  background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0,85,179,0.10) 0%, transparent 70%);
   animation: orbDrift3 14s ease-in-out infinite alternate;
 }
 
@@ -129,8 +129,8 @@
   overflow: hidden;
   box-shadow:
     0 0 0 1px var(--al-border),
-    0 32px 80px rgba(0,0,0,0.6),
-    0 0 60px rgba(124,58,237,0.08);
+    0 32px 80px rgba(0,0,0,0.65),
+    0 0 60px rgba(0,104,179,0.06);
 
   /* Entrance animation */
   animation: cardIn 0.7s var(--al-ease-out) both;
@@ -147,7 +147,7 @@
 
 .al-brand-panel {
   position: relative;
-  background: linear-gradient(145deg, #120d22 0%, #1a1030 50%, #0f0820 100%);
+  background: linear-gradient(145deg, #071628 0%, #0d1b2a 50%, #07101a 100%);
   padding: 48px 40px;
   display: flex;
   flex-direction: column;
@@ -163,8 +163,8 @@
   width: 1px;
   background: linear-gradient(180deg,
     transparent 0%,
-    rgba(124,58,237,0.3) 30%,
-    rgba(192,38,211,0.3) 70%,
+    rgba(0,133,229,0.30) 30%,
+    rgba(0,104,179,0.25) 70%,
     transparent 100%
   );
 }
@@ -176,7 +176,7 @@
   left: -60px;
   width: 380px;
   height: 380px;
-  background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0,104,179,0.14) 0%, transparent 70%);
   pointer-events: none;
   border-radius: 50%;
 }
@@ -217,7 +217,7 @@
 }
 
 .al-brand-accent {
-  background: linear-gradient(135deg, var(--al-accent-light) 0%, #e879f9 100%);
+  background: linear-gradient(135deg, #40b4fa 0%, #0085E5 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -257,8 +257,8 @@
   width: 32px;
   height: 32px;
   border-radius: 9px;
-  background: var(--al-accent-glass);
-  border: 1px solid rgba(124,58,237,0.2);
+  background: rgba(0,104,179,0.12);
+  border: 1px solid rgba(0,133,229,0.18);
   font-size: 0.9rem;
   flex-shrink: 0;
 }
@@ -365,10 +365,10 @@
   transition: all 180ms ease !important;
 }
 .al-clerk-shell .cl-socialButtonsBlockButton:hover {
-  background: rgba(32,28,48,1) !important;
-  border-color: rgba(124,58,237,0.4) !important;
+  background: rgba(13,27,42,1) !important;
+  border-color: rgba(0,133,229,0.35) !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.3) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35) !important;
 }
 
 /* Divider */
@@ -401,8 +401,8 @@
   transition: border-color 200ms ease, box-shadow 200ms ease !important;
 }
 .al-clerk-shell .cl-formFieldInput:focus {
-  border-color: var(--al-border-focus) !important;
-  box-shadow: 0 0 0 3px rgba(124,58,237,0.18) !important;
+  border-color: rgba(0,133,229,0.50) !important;
+  box-shadow: 0 0 0 3px rgba(0,104,179,0.14) !important;
   outline: none !important;
 }
 .al-clerk-shell .cl-formFieldInput::placeholder {
@@ -418,16 +418,16 @@
 
 /* Primary (submit) button */
 .al-clerk-shell .cl-formButtonPrimary {
-  background: linear-gradient(135deg, var(--al-accent) 0%, var(--al-pink) 100%) !important;
+  background: #0068B3 !important;
   border: none !important;
-  border-radius: 13px !important;
+  border-radius: 9999px !important;
   color: #fff !important;
   font-size: 0.9375rem !important;
   font-weight: 700 !important;
   min-height: 48px !important;
   letter-spacing: -0.01em !important;
   transition: all 200ms ease !important;
-  box-shadow: 0 4px 20px rgba(124,58,237,0.38) !important;
+  box-shadow: 0 4px 20px rgba(0,104,179,0.30) !important;
   position: relative !important;
   overflow: hidden !important;
   cursor: pointer !important;
@@ -436,15 +436,13 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0);
-  transition: background 200ms ease;
-}
-.al-clerk-shell .cl-formButtonPrimary:hover::before {
-  background: rgba(255,255,255,0.07);
+  background: linear-gradient(135deg, rgba(255,255,255,0.10), transparent);
+  pointer-events: none;
 }
 .al-clerk-shell .cl-formButtonPrimary:hover {
+  background: #0079cc !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 8px 28px rgba(124,58,237,0.55) !important;
+  box-shadow: 0 8px 28px rgba(0,104,179,0.45) !important;
 }
 .al-clerk-shell .cl-formButtonPrimary:active {
   transform: translateY(0) !important;
@@ -456,11 +454,11 @@
   font-size: 0.8rem !important;
 }
 .al-clerk-shell .cl-footerActionLink {
-  color: var(--al-accent-light) !important;
+  color: #0085E5 !important;
   font-weight: 600 !important;
 }
 .al-clerk-shell .cl-footerActionLink:hover {
-  color: #c4b5fd !important;
+  color: #40b4fa !important;
 }
 
 /* Hide Clerk's own footer nav since we have al-toggle below */
@@ -482,7 +480,7 @@
 }
 
 .al-toggle-link {
-  color: var(--al-accent-light);
+  color: #0085E5;
   font-weight: 600;
   text-decoration: none;
   transition: color 180ms ease;
@@ -496,20 +494,20 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: var(--al-accent-light);
+  background: #0085E5;
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 220ms var(--al-ease-out);
 }
 
 .al-toggle-link:hover {
-  color: #c4b5fd;
+  color: #40b4fa;
 }
 .al-toggle-link:hover::after {
   transform: scaleX(1);
 }
 .al-toggle-link:focus-visible {
-  outline: 2px solid var(--al-accent-light);
+  outline: 2px solid #0085E5;
   outline-offset: 3px;
   border-radius: 3px;
 }

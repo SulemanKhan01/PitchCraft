@@ -1,41 +1,45 @@
 /* ============================================
    PitchCraft — Global Styles & Design Tokens
-   ALWAYS DARK THEME
+   ABARK.TECH THEME — Deep Navy + Corporate Blue
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
 :root {
-  /* ---- Brand ---- */
-  --primary:        #7c3aed;
-  --primary-hover:  #6d28d9;
-  --primary-light:  rgba(124, 58, 237, 0.12);
-  --primary-glow:   rgba(124, 58, 237, 0.25);
+  /* ---- Brand (Abark.tech Blue) ---- */
+  --primary:        #0068B3;
+  --primary-hover:  #0079cc;
+  --primary-light:  rgba(0, 104, 179, 0.10);
+  --primary-glow:   rgba(0, 104, 179, 0.25);
+  --primary-bright: #0085E5;
 
-  /* ---- Background layers ---- */
-  --bg:             #0d0b14;
-  --bg-elevated:    #13101e;
-  --bg-secondary:   #1a1628;
-  --bg-tertiary:    #201c30;
+  /* ---- Background layers (Abark.tech Deep Navy) ---- */
+  --bg:             #080d14;
+  --bg-elevated:    #0d1b2a;
+  --bg-secondary:   #0f2236;
+  --bg-tertiary:    #132d45;
+  --bg-card:        #0d1e30;
 
   /* ---- Text ---- */
-  --text:           #9ca3af;
-  --text-light:     #5b6473;
-  --text-heading:   #f1f0f5;
-  --text-muted:     #4b5563;
+  --text:           rgba(255,255,255,0.70);
+  --text-light:     rgba(255,255,255,0.45);
+  --text-heading:   #ffffff;
+  --text-muted:     rgba(255,255,255,0.25);
 
   /* ---- Borders ---- */
-  --border:         rgba(255,255,255,0.07);
-  --border-strong:  rgba(255,255,255,0.12);
-  --border-focus:   rgba(124, 58, 237, 0.5);
+  --border:         rgba(255,255,255,0.06);
+  --border-strong:  rgba(255,255,255,0.10);
+  --border-focus:   rgba(0, 104, 179, 0.55);
+  --border-blue:    rgba(0, 133, 229, 0.20);
 
   /* ---- Shadows ---- */
-  --shadow-sm:  0 1px 4px rgba(0,0,0,0.4);
-  --shadow:     0 4px 16px rgba(0,0,0,0.5);
-  --shadow-lg:  0 12px 40px rgba(0,0,0,0.6);
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.5);
+  --shadow:     0 4px 20px rgba(0,0,0,0.55);
+  --shadow-lg:  0 12px 48px rgba(0,0,0,0.65);
+  --shadow-blue: 0 4px 24px rgba(0, 104, 179, 0.30);
 
   /* ---- Status ---- */
-  --success: #34d399;
+  --success: #10b981;
   --error:   #f87171;
 
   /* ---- Type ---- */
@@ -45,7 +49,8 @@
   /* ---- Radii ---- */
   --radius:    8px;
   --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-xl: 22px;
+  --radius-pill: 9999px;
 }
 
 /* Reset */
@@ -76,12 +81,12 @@ body {
 
 h1, h2, h3, h4 {
   color: var(--text-heading);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
 }
 
 a {
-  color: var(--primary);
+  color: var(--primary-bright);
   text-decoration: none;
 }
 
@@ -98,5 +103,5 @@ input, textarea {
 
 ::-webkit-scrollbar         { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track   { background: transparent; }
-::-webkit-scrollbar-thumb   { background: rgba(255,255,255,0.1); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+::-webkit-scrollbar-thumb   { background: rgba(0,104,179,0.25); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,133,229,0.45); }

@@ -9,27 +9,27 @@
      • Mobile-first breakpoints   (skill rule #5)
    ============================================================ */
 
-/* ─── Local design tokens (scoped to .cp-root) ──────────────── */
+/* ─── Local design tokens — Abark.tech Blue (scoped to .cp-root) ─ */
 .cp-root {
-  --cp-accent:          #7c3aed;
-  --cp-accent-mid:      #8b5cf6;
-  --cp-accent-light:    #a78bfa;
-  --cp-accent-glow:     rgba(124, 58, 237, 0.28);
-  --cp-accent-glass:    rgba(124, 58, 237, 0.08);
+  --cp-accent:          #0068B3;
+  --cp-accent-mid:      #0079cc;
+  --cp-accent-light:    #0085E5;
+  --cp-accent-glow:     rgba(0, 104, 179, 0.28);
+  --cp-accent-glass:    rgba(0, 104, 179, 0.08);
 
-  --cp-surface-1:       #0d0b14;   /* page bg */
-  --cp-surface-2:       #13101e;   /* header / input area */
-  --cp-surface-3:       #1a1628;   /* bubbles, cards */
-  --cp-surface-4:       #201c30;   /* hover states */
+  --cp-surface-1:       #080d14;   /* page bg */
+  --cp-surface-2:       #0d1b2a;   /* header / input area */
+  --cp-surface-3:       #0f2236;   /* bubbles, cards */
+  --cp-surface-4:       #132d45;   /* hover states */
 
-  --cp-border:          rgba(255,255,255,0.07);
-  --cp-border-strong:   rgba(255,255,255,0.12);
-  --cp-border-accent:   rgba(124, 58, 237, 0.45);
+  --cp-border:          rgba(255,255,255,0.06);
+  --cp-border-strong:   rgba(255,255,255,0.10);
+  --cp-border-accent:   rgba(0, 133, 229, 0.40);
 
-  --cp-text-body:       #c4c2cc;
-  --cp-text-heading:    #f1f0f5;
-  --cp-text-muted:      #5b6473;
-  --cp-text-light:      #7e8999;
+  --cp-text-body:       rgba(255,255,255,0.70);
+  --cp-text-heading:    #ffffff;
+  --cp-text-muted:      rgba(255,255,255,0.28);
+  --cp-text-light:      rgba(255,255,255,0.45);
 
   --cp-success:         #34d399;
   --cp-error:           #f87171;
@@ -40,7 +40,7 @@
   --cp-radius-xl:       24px;
 
   --cp-transition:      180ms cubic-bezier(0.4, 0, 0.2, 1);
-  --cp-shadow-card:     0 4px 24px rgba(0,0,0,0.45);
+  --cp-shadow-card:     0 4px 24px rgba(0,0,0,0.50);
   --cp-shadow-glow:     0 0 24px var(--cp-accent-glow);
 }
 
@@ -121,7 +121,7 @@
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--cp-accent) 0%, #a855f7 60%, #c026d3 100%);
+  background: linear-gradient(135deg, var(--cp-accent) 0%, #0079cc 60%, #0068B3 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -537,7 +537,7 @@
 }
 
 .cp-avatar--ai {
-  background: linear-gradient(135deg, var(--cp-accent) 0%, #a855f7 100%);
+  background: linear-gradient(135deg, var(--cp-accent) 0%, #0079cc 100%);
   color: #fff;
   box-shadow: 0 2px 12px var(--cp-accent-glow);
 }
@@ -583,7 +583,7 @@
 }
 
 .cp-msg--user .cp-bubble {
-  background: linear-gradient(135deg, var(--cp-accent) 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, var(--cp-accent) 0%, #005a9e 100%);
   color: #fff;
   border-bottom-right-radius: 4px;
   box-shadow: 0 4px 16px var(--cp-accent-glow);
@@ -940,7 +940,7 @@
   align-items: center;
   gap: 7px;
   padding: 9px 18px;
-  background: linear-gradient(135deg, var(--cp-accent) 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, var(--cp-accent) 0%, #005a9e 100%);
   color: #fff;
   border-radius: 13px;
   font-size: 0.85rem;
